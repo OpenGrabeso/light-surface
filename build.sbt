@@ -96,7 +96,6 @@ val jsBuildSettings = Seq[Setting[_]](
     // TODO It should be included in AirSpec
     "org.scala-js" %%% "scala-js-macrotask-executor" % "1.1.1" % Test
   ),
-  coverageEnabled := false
 )
 
 val surfaceDependencies = { scalaVersion: String =>
