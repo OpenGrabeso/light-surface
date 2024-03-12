@@ -13,10 +13,12 @@
  */
 package wvlet.airframe.surface
 
-import wvlet.airspec.AirSpec
+import org.scalatest.funsuite.AnyFunSuite
+import org.scalatest.matchers.should
+
 import scala.jdk.CollectionConverters.*
 
-object Scala3EnumTest extends AirSpec:
+object Scala3EnumTest extends AnyFunSuite with should.Matchers:
 
   enum Color:
     case Red, Green, Blue

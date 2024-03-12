@@ -12,9 +12,11 @@
  * limitations under the License.
  */
 package wvlet.airframe.surface
-import wvlet.airspec.AirSpec
 
-object IntersectionTypeTest extends AirSpec:
+import org.scalatest.funsuite.AnyFunSuite
+import org.scalatest.matchers.should
+
+class IntersectionTypeTest extends AnyFunSuite with should.Matchers:
   trait Label1
 
   test("support intersection type") {
@@ -22,9 +24,9 @@ object IntersectionTypeTest extends AirSpec:
     val s = Surface.of[String & Label1]
     s.name shouldBe "String&Label1"
     s.fullName shouldBe "java.lang.String&wvlet.airframe.surface.IntersectionTypeTest.Label1"
-    s shouldMatch { case i: IntersectionSurface =>
+    s match { case i: IntersectionSurface =>
       i.left shouldBe Surface.of[String]
       i.right shouldBe Surface.of[Label1]
     }
-    s shouldNotBe Surface.of[String]
+    s should not be Surface.of[String]
   }

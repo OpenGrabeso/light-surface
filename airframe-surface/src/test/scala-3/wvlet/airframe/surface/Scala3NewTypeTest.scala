@@ -12,31 +12,33 @@
  * limitations under the License.
  */
 package wvlet.airframe.surface
-import wvlet.airspec.AirSpec
 
-object Scala3NewTypeTest extends AirSpec:
+import org.scalatest.funsuite.AnyFunSuite
+import org.scalatest.matchers.should
+
+object Scala3NewTypeTest extends AnyFunSuite with should.Matchers:
   trait Label1
 
   test("support intersection type") {
     val s = Surface.of[String & Label1]
     s.name shouldBe "String&Label1"
     s.fullName shouldBe "java.lang.String&wvlet.airframe.surface.Scala3NewTypeTest.Label1"
-    s shouldMatch { case i: IntersectionSurface =>
+    s match { case i: IntersectionSurface =>
       i.left shouldBe Surface.of[String]
       i.right shouldBe Surface.of[Label1]
     }
-    s shouldNotBe Surface.of[String]
+    s should not be Surface.of[String]
   }
 
   test("support union type") {
     val s = Surface.of[String | Label1]
     s.name shouldBe "String|Label1"
     s.fullName shouldBe "java.lang.String|wvlet.airframe.surface.Scala3NewTypeTest.Label1"
-    s shouldMatch { case i: UnionSurface =>
+    s match { case i: UnionSurface =>
       i.left shouldBe Surface.of[String]
       i.right shouldBe Surface.of[Label1]
     }
-    s shouldNotBe Surface.of[String]
+    s should not be Surface.of[String]
   }
 
   opaque type MyEnv = String
@@ -45,7 +47,7 @@ object Scala3NewTypeTest extends AirSpec:
     val s = Surface.of[MyEnv]
     s.name shouldBe "MyEnv"
     s.fullName shouldBe "wvlet.airframe.surface.Scala3NewTypeTest.MyEnv"
-    s shouldNotBe Surface.of[String]
+    s should not be Surface.of[String]
     s.dealias shouldBe Surface.of[String]
   }
 
