@@ -11,28 +11,8 @@ ThisBuild / resolvers ++= Resolver.sonatypeOssRepos("snapshots")
 
 val AIRSPEC_VERSION                 = sys.env.getOrElse("AIRSPEC_VERSION", "24.2.3")
 val SCALACHECK_VERSION              = "1.17.0"
-val MSGPACK_VERSION                 = "0.9.8"
-val SCALA_PARSER_COMBINATOR_VERSION = "2.3.0"
-val SQLITE_JDBC_VERSION             = "3.45.1.0"
-val SLF4J_VERSION                   = "2.0.12"
 val JS_JAVA_LOGGING_VERSION         = "1.0.0"
-val JS_JAVA_TIME_VERSION            = "1.0.0"
-val SCALAJS_DOM_VERSION             = "2.8.0"
-val FINAGLE_VERSION                 = "23.11.0"
-val FLUENCY_VERSION                 = "2.7.0"
-val GRPC_VERSION                    = "1.52.0"
-val JMH_VERSION                     = "1.37"
 val JAVAX_ANNOTATION_API_VERSION    = "1.3.2"
-val PARQUET_VERSION                 = "1.13.1"
-val SNAKE_YAML_VERSION              = "2.2"
-
-val AIRFRAME_BINARY_COMPAT_VERSION = "23.6.0"
-
-// A short cut for publishing snapshots to Sonatype
-addCommandAlias(
-  "publishSnapshots",
-  s"+ projectJVM/publish; + projectJS/publish"
-)
 
 // [Development purpose] publish all artifacts to the local repo
 addCommandAlias(
@@ -40,16 +20,6 @@ addCommandAlias(
   s"+ projectJVM/publishLocal; + projectJS/publishLocal;"
 )
 
-// [Development purpose] publish all sbt-airframe related artifacts to local repo
-addCommandAlias(
-  "publishSbtDevLocal",
-  s"++ 2.12; projectJVM/publishLocal; ++ 3; projectDotty/publishLocal; projectJS/publishLocal"
-)
-
-addCommandAlias(
-  "publishJSSigned",
-  s"+ projectJS/publishSigned"
-)
 addCommandAlias(
   "publishJSLocal",
   s"+ projectJS/publishLocal"
@@ -211,40 +181,6 @@ def parallelCollection(scalaVersion: String) = {
     Seq.empty
   }
 }
-
-// https://stackoverflow.com/questions/41670018/how-to-prevent-sbt-to-include-test-dependencies-into-the-pom
-import scala.xml.{Node => XmlNode, NodeSeq => XmlNodeSeq, *}
-import scala.xml.transform.{RewriteRule, RuleTransformer}
-
-def excludePomDependency(excludes: Seq[String]) = { node: XmlNode =>
-  def isExcludeTarget(artifactId: String): Boolean =
-    excludes.exists(artifactId.startsWith(_))
-
-  def artifactId(e: Elem): Option[String] =
-    e.child.find(_.label == "artifactId").map(_.text.trim())
-
-  new RuleTransformer(new RewriteRule {
-    override def transform(node: XmlNode): XmlNodeSeq =
-      node match {
-        case e: Elem
-            if e.label == "dependency"
-              && artifactId(e).exists(id => isExcludeTarget(id)) =>
-          Comment(s"Excluded compile-time only dependency: ${artifactId(e).getOrElse("")}")
-        case _ =>
-          node
-      }
-  }).transform(node).head
-}
-
-def crossBuildSources(scalaBinaryVersion: String, baseDir: String, srcType: String = "main"): Seq[sbt.File] = {
-  val scalaMajorVersion = scalaBinaryVersion.split("\\.").head
-  for (suffix <- Seq("", s"-${scalaBinaryVersion}", s"-${scalaMajorVersion}").distinct)
-    yield {
-      file(s"${baseDir}/src/${srcType}/scala${suffix}")
-    }
-}
-
-
 
 // // To use airframe in other airframe modules, we need to reference airframeMacros project
 // lazy val airframeMacrosJVMRef = airframeMacrosJVM % Optional
