@@ -18,8 +18,6 @@ import scala.language.existentials
 sealed trait ParameterBase extends Serializable {
   def name: String
   def surface: Surface
-
-  def call(obj: Any, x: Any*): Any
 }
 
 trait Parameter extends ParameterBase {
@@ -42,17 +40,10 @@ trait Parameter extends ParameterBase {
   def isSecret: Boolean
 
   /**
-    * Get this parameter value from a given object x
-    */
-  def get(x: Any): Any
-
-  override def call(obj: Any, x: Any*): Any = get(obj)
-
-  /**
-    * Get the default value of this parameter. For example the default value of x in class A(x:Int = 10) is 10
-    *
-    * @return
-    */
+   * Get the default value of this parameter. For example the default value of x in class A(x:Int = 10) is 10
+   *
+   * @return
+   */
   def getDefaultValue: Option[Any]
 }
 
@@ -78,13 +69,6 @@ case class MethodRef(owner: Class[_], name: String, paramTypes: Seq[Class[_]], i
 
 trait MethodParameter extends Parameter {
   def method: MethodRef
-
-  /**
-    * Method owner instance is necessary to find by-name parameter default values
-    * @param methodOwner
-    * @return
-    */
-  def getMethodArgDefaultValue(methodOwner: Any): Option[Any] = getDefaultValue
 }
 
 object MethodParameter {
@@ -120,17 +104,9 @@ case class StaticMethodParameter(
     isSecret: Boolean,
     surface: Surface,
     private val defaultValue: Option[Any] = None,
-    accessor: Option[Any => Any] = None,
-    methodArgAccessor: Option[Any => Any] = None
 ) extends MethodParameter {
   override def toString: String             = s"${name}:${surface.name}"
-  def get(x: Any): Any                      = accessor.map(a => a(x)).getOrElse(null)
   override def getDefaultValue: Option[Any] = defaultValue
-  override def getMethodArgDefaultValue(methodOwner: Any): Option[Any] = {
-    methodArgAccessor.map { acc =>
-      acc(methodOwner)
-    }
-  }
 }
 
 object Primitive {
@@ -413,8 +389,4 @@ case class ClassMethodSurface(
     name: String,
     returnType: Surface,
     args: Seq[MethodParameter],
-) extends MethodSurface {
-  override def call(obj: Any, x: Any*): Any = {
-    throw new UnsupportedOperationException(s"Calling method ${name} is not supported: ${this}")
-  }
-}
+) extends MethodSurface

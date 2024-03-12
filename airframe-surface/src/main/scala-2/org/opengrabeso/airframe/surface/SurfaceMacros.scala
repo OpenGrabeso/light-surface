@@ -340,45 +340,6 @@ private[surface] object SurfaceMacros {
           case p        => p.isPrivate
         }
       }
-
-      def accessor(t: c.Type): c.Tree = {
-        try {
-          if (
-            paramName.isSynthetic || // x$1, etc.
-            isPrivateParam(t) ||
-            (t.typeSymbol.isAbstract && !(t <:< typeOf[AnyVal]))
-          ) {
-            q"None"
-          } else {
-            t.typeArgs.size match {
-              // TODO We may need to expand Select(Ident(x.y.z....), TermName("a")) =>
-              // Select(Select(Select(Ident(TermName("x")), TermName("y")), ....
-              case 0 =>
-                q"Some({x:Any => x.asInstanceOf[${t.typeSymbol}].${paramNameTerm}})"
-              case 1 =>
-                q"Some({x:Any => x.asInstanceOf[${t.typeSymbol}[_]].${paramNameTerm}})"
-              case 2 =>
-                q"Some({x:Any => x.asInstanceOf[${t.typeSymbol}[_, _]].${paramNameTerm}})"
-              case 3 =>
-                q"Some({x:Any => x.asInstanceOf[${t.typeSymbol}[_, _, _]].${paramNameTerm}})"
-              case 4 =>
-                q"Some({x:Any => x.asInstanceOf[${t.typeSymbol}[_, _, _, _]].${paramNameTerm}})"
-              case 5 =>
-                q"Some({x:Any => x.asInstanceOf[${t.typeSymbol}[_, _, _, _, _]].${paramNameTerm}})"
-              case 6 =>
-                q"Some({x:Any => x.asInstanceOf[${t.typeSymbol}[_, _, _, _, _, _]].${paramNameTerm}})"
-              case 7 =>
-                q"Some({x:Any => x.asInstanceOf[${t.typeSymbol}[_, _, _, _, _, _, _]].${paramNameTerm}})"
-              case 8 =>
-                q"Some({x:Any => x.asInstanceOf[${t.typeSymbol}[_, _, _, _, _, _, _, _]].${paramNameTerm}})"
-              case other => q"None"
-            }
-          }
-        } catch {
-          case e: Throwable =>
-            q"None"
-        }
-      }
     }
 
     private def findMethod(m: Type, name: String): Option[MethodSymbol] = {
@@ -485,11 +446,6 @@ private[surface] object SurfaceMacros {
           case s =>
             s.asTerm.isPublic
         }
-        val accessor = if (method.isConstructor && isPublic) {
-          arg.accessor(targetType)
-        } else {
-          q"None"
-        }
 
         val expr =
           q"""org.opengrabeso.airframe.surface.StaticMethodParameter(
@@ -500,7 +456,6 @@ private[surface] object SurfaceMacros {
             isSecret = ${arg.isSecret},
             surface = ${arg.typeSurface},
             defaultValue = ${defaultValue},
-            accessor = ${accessor}
           )
           """
         index += 1

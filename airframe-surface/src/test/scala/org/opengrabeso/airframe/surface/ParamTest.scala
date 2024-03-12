@@ -36,20 +36,4 @@ class ParamTest extends SurfaceSpec {
     val p1 = s.params(1)
     assert(p1.getDefaultValue == Option(20))
   }
-
-  test("public field access") {
-    val s  = Surface.of[ParamTest.B]
-    val p1 = s.params(0)
-    val v  = ParamTest.B(1, 2, 3)
-    assertEquals(p1.get(v), 1)
-  }
-
-  test("access params through alias") {
-    val s               = Surface.of[ParamTest.A1]
-    val p1              = s.params(0)
-    val p2              = s.params(1)
-    val v: ParamTest.A1 = ParamTest.A(10, 20)
-    assertEquals(p1.get(v), 10)
-    assertEquals(p2.get(v), 20)
-  }
 }

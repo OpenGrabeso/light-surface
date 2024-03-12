@@ -37,14 +37,6 @@ object ObjectBuilder extends LogSupport {
     new SimpleObjectBuilder(s)
   }
 
-  def fromObject[A](surface: Surface, obj: A): ObjectBuilder = {
-    val b = new SimpleObjectBuilder(surface)
-    for (p <- surface.params) {
-      b.set(p.name, p.get(obj))
-    }
-    b
-  }
-
   sealed trait BuilderElement
   case class Holder(holder: ObjectBuilder)                 extends BuilderElement
   case class Value(value: Any)                             extends BuilderElement

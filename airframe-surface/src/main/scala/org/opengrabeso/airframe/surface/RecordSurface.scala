@@ -74,6 +74,5 @@ case class RecordParameter(
     isSecret: Boolean = false,
     defaultValue: Option[Any] = None
 ) extends Parameter {
-  override def get(x: Any): Any             = ???
   override def getDefaultValue: Option[Any] = defaultValue
 }

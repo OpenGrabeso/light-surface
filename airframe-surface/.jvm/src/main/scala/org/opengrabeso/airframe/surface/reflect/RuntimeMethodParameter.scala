@@ -113,17 +113,6 @@ case class RuntimeMethodParameter(
     })
   }
 
-  override def getMethodArgDefaultValue(methodOwner: Any): Option[Any] = {
-    try {
-      val methodName = "%s$default$%d".format(method.name, index + 1)
-      val dm         = methodOwner.getClass.getMethod(methodName)
-      Some(dm.invoke(methodOwner))
-    } catch {
-      case e: Throwable =>
-        None
-    }
-  }
-
   override def isRequired: Boolean = {
     val annots = this.findAnnotationOf[required]
     annots.isDefined

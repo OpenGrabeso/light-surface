@@ -14,7 +14,7 @@ publish / skip := true
 
 publishLocal / skip := true
 
-val VERSION = "0.0.2"
+val VERSION = "0.0.5-SNAPSHOT"
 val SCALA_2_13          = "2.13.13"
 val SCALA_3_4             = "3.4.1-RC1"
 val targetScalaVersions = SCALA_3_4 :: SCALA_2_13 :: Nil

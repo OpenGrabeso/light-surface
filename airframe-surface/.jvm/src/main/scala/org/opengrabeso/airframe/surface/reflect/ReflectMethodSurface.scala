@@ -29,28 +29,6 @@ case class ReflectMethodSurface(mod: Int, owner: Surface, name: String, returnTy
   private lazy val method: Option[jl.reflect.Method] = ReflectMethodSurface.findMethod(owner.rawType, this)
 
   def getMethod: Option[jl.reflect.Method] = method
-
-  override def call(obj: Any, x: Any*): Any = {
-    val targetMethod: Option[jl.reflect.Method] = method.orElse {
-      // RefinedTypes may have new methods which cannot be found from the owner
-      Option(obj).flatMap(objRef => ReflectMethodSurface.findMethod(objRef.getClass, this))
-    }
-
-    targetMethod match {
-      case Some(m) =>
-        if (x == null || x.isEmpty) {
-          trace(s"Calling method ${name}")
-          m.invoke(obj)
-        } else {
-          val args = x.map(_.asInstanceOf[AnyRef])
-          trace(s"Calling method ${name} with args: ${args.mkString(", ")}")
-          m.invoke(obj, args: _*)
-        }
-      case None =>
-        trace(s"Undefined method: ${name} in ${obj} (${owner.rawType})")
-        null
-    }
-  }
 }
 
 object ReflectMethodSurface {

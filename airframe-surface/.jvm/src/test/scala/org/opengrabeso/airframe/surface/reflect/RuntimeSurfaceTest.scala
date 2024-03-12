@@ -170,12 +170,4 @@ class RuntimeSurfaceTest extends SurfaceSpec {
     assert(p.getDefaultValue.isDefined)
     assert(p.getDefaultValue.get == 10)
   }
-
-  test("access parameters") {
-    val a = RuntimeSurface.of[A]
-    assert(a.params(0).get(a0) == true)
-    assert(a.params(3).get(a0) == 10)
-    assert(a.params(4).get(a0) == 20L)
-    assert(a.params(7).get(a0) == "hello")
-  }
 }

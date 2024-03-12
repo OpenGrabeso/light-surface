@@ -188,24 +188,7 @@ class SurfaceTest extends SurfaceSpec {
     check(Surface.of[Map[_, _]], "Map[_,_]")
   }
 
-  val a0 = A(true, 0.toByte, 1.toShort, 10, 20L, 0.1f, 0.2, "hello")
-
-  test("find default parameter") {
-    val f = check(Surface.of[F], "F")
-    val p = f.params(0)
-    assert(p.getDefaultValue.isDefined)
-    assert(p.getDefaultValue.get == 10)
-  }
-
-  test("access parameters") {
-    val a = Surface.of[A]
-    assert(a.params(0).get(a0) == true)
-    assert(a.params(3).get(a0) == 10)
-    assert(a.params(4).get(a0) == 20L)
-    assert(a.params(7).get(a0) == "hello")
-  }
-
-    test("bigint") {
+  test("bigint") {
     Surface.of[BigInt]
     Surface.of[BigInteger]
   }

@@ -589,55 +589,6 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q):
           case _                                => true
       // println(s"${paramName} ${paramIsAccessible}")
 
-      val accessor: Expr[Option[Any => Any]] = if method.isClassConstructor && paramIsAccessible then
-        // MethodParameter.accessor[(owner type), (parameter type]]
-        val accessorMethod: Symbol = TypeRepr.of[MethodParameter.type].typeSymbol.methodMember("accessor").head
-        val objRef                 = Ref(TypeRepr.of[MethodParameter].typeSymbol.companionModule)
-
-        def resolveType(tpe: TypeRepr): TypeRepr = tpe match
-          case b: TypeBounds =>
-            TypeRepr.of[Any]
-          case _ =>
-            tpe
-
-        val t1 = resolveType(t)
-        val t2 = resolveType(paramType)
-
-        val typedAccessor = objRef.select(accessorMethod).appliedToTypes(List(t1, t2))
-        val methodCall    = typedAccessor.appliedToArgs(List(Literal(ClassOfConstant(t1))))
-
-        val lambda = Lambda(
-          owner = Symbol.spliceOwner,
-          tpe = MethodType(List("x"))(_ => List(t1), _ => t2),
-          rhsFn = (sym, params) =>
-            val x    = params.head.asInstanceOf[Term]
-            val expr = Select.unique(x, paramName)
-            expr.changeOwner(sym)
-        )
-        val accMethod = methodCall.appliedToArgs(List(lambda))
-        // println(s"=== ${accMethod.show}")
-
-        // Generate code like :
-        // {{{
-        //   MethodParameter.accessor[t1, t2](classOf[t1]){(x:t1) => x.(field name) }
-        // }}}
-        '{ Some(${ accMethod.asExprOf[Any => Any] }) }
-      else '{ None }
-
-      val methodArgAccessor: Expr[Option[Any => Any]] = field.defaultMethodArgGetter match
-        case None =>
-          '{ None }
-        case Some(m) =>
-          val lambda = Lambda(
-            owner = Symbol.spliceOwner,
-            tpe = MethodType(List("x"))(_ => List(TypeRepr.of[Any]), _ => TypeRepr.of[Any]),
-            rhsFn = (sym, params) =>
-              val x    = params.head.asInstanceOf[Term]
-              val expr = clsCast(x, t).select(m)
-              expr.changeOwner(sym)
-          )
-          '{ Some(${ lambda.asExprOf[Any => Any] }) }
-
       // Using StaticMethodParameter when supportin Scala.js in Scala 3.
       // TODO: Deprecate RuntimeMethodParameter
       '{
@@ -649,8 +600,6 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q):
           isSecret = ${ Expr(field.isSecret) },
           surface = ${ surfaceOf(paramType) },
           defaultValue = ${ defaultValue },
-          accessor = ${ accessor },
-          methodArgAccessor = ${ methodArgAccessor }
         )
       }
     // println(paramExprs.map(_.show).mkString("\n"))
@@ -681,7 +630,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q):
       .filterNot(x => primitiveTypeFactory.isDefinedAt(x._1))
       .sortBy(_._2)
       .reverse
-      .map { case (tpe, order) =>
+      .foreach { case (tpe, order) =>
         // Update the cache so that the next call of surfaceOf method will use the local varaible reference
         surfaceToVar += tpe -> Symbol.newVal(
           Symbol.spliceOwner,
@@ -699,6 +648,8 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q):
         )
         surfaceVarCount += 1
       }
+
+    // print(surfaceToVar.map(v => s"  ${v._1.show} => ${v._2}").mkString(s"methodsOf ${t.show}:\n", "\n", "\n"))
 
     // Clear surface cache
     memo.clear()
@@ -721,7 +672,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q):
       methodsOfInternal(t).asTerm
     ).asExprOf[Seq[MethodSurface]]
 
-    // println(s"===  methodOf: ${t.typeSymbol.fullName} => \n${expr.show}")
+    println(s"===  methodOf: ${t.typeSymbol.fullName} => \n${expr.show}")
     expr
 
   private val seenMethodParent = scala.collection.mutable.Set[TypeRepr]()
