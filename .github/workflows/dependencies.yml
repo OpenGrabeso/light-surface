@@ -17,7 +17,6 @@ jobs:
       - uses: scalacenter/sbt-dependency-submission@v2
         id: submit
         with:
-          modules-ignore: interactive_2.13 # We are interested only in security issues in the library itself
           configs-ignore: test test-internal
 
       - name: Print Dependency Snapshot
