@@ -16,8 +16,9 @@ publishLocal / skip := true
 
 val VERSION = "0.0.1-SNAPSHOT"
 val SCALA_2_13          = "2.13.13"
-val SCALA_3             = "3.3.3"
-val targetScalaVersions = SCALA_3 :: SCALA_2_13 :: Nil
+val SCALA_3_3             = "3.3.3"
+val SCALA_3_4             = "3.4.1-RC1"
+val targetScalaVersions = SCALA_3_4 :: SCALA_3_3 :: SCALA_2_13 :: Nil
 
 // Add this for using snapshot versions
 ThisBuild / resolvers ++= Resolver.sonatypeOssRepos("snapshots")
@@ -39,7 +40,7 @@ Global / onChangedBuildSource := ReloadOnSourceChanges
 ThisBuild / usePipelining := false
 
 // Use Scala 3 by default as scala-2 specific source code is relatively small now
-ThisBuild / scalaVersion := SCALA_3
+ThisBuild / scalaVersion := SCALA_3_4
 
 ThisBuild / organization := "org.opengrabeso"
 
@@ -52,15 +53,20 @@ val buildSettings = tokenSettings ++ Seq[Setting[_]](
   crossScalaVersions    := targetScalaVersions,
   crossPaths            := true,
   publishMavenStyle     := true,
-  javacOptions ++= Seq("-source", "11", "-target", "11"),
   scalacOptions ++= Seq(
     "-feature",
-    "-deprecation"
+    "-deprecation",
+    "-release:8",
     // Use this flag for debugging Macros
     // "-Xcheck-macros",
   ) ++ {
     if (scalaVersion.value.startsWith("3.")) {
-      Seq.empty
+      Seq(
+        "-Wconf:msg=`_` is deprecated for wildcard arguments of types:s",
+        "-Wconf:msg=with as a type operator has been deprecated:s",
+        "-Wconf:msg=The syntax .* is no longer supported for vararg splices:s",
+        "-Wconf:msg=Alphanumeric method .* is not declared infix:s",
+      )
     } else {
       Seq(
         // Necessary for tracking source code range in airframe-rx demo
