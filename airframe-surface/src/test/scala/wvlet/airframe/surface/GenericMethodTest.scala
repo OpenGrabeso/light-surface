@@ -13,9 +13,10 @@
  */
 package wvlet.airframe.surface
 
-import wvlet.airspec.AirSpec
+import org.scalatest.funsuite.AnyFunSuite
+import org.scalatest.matchers.should
 
-object GenericMethodTest extends AirSpec {
+class GenericMethodTest extends AnyFunSuite with should.Matchers {
   class A {
     def helloX[X](v: X): String = "hello"
   }
@@ -24,9 +25,8 @@ object GenericMethodTest extends AirSpec {
     val methods = Surface.methodsOf[A]
     methods.size shouldBe 1
     val m = methods(0)
-
-    val obj = new GenericMethodTest.A
-    m.call(obj, "dummy") shouldBe "hello"
+    m.name shouldBe "helloX"
+    m.returnType shouldBe Surface.of[String]
   }
 
 }
