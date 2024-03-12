@@ -1,6 +1,6 @@
 ThisBuild / githubOwner := "OpenGrabeso"
 
-ThisBuild / githubRepository := "packages"
+ThisBuild / githubRepository := "light-surface"
 
 Global / excludeLintKeys += ThisBuild / githubTokenSource // prevent warning in SBT
 
