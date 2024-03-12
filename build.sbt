@@ -14,7 +14,7 @@ publish / skip := true
 
 publishLocal / skip := true
 
-val VERSION = "0.0.1-SNAPSHOT"
+val VERSION = "0.0.1"
 val SCALA_2_13          = "2.13.13"
 val SCALA_3_3             = "3.3.3"
 val SCALA_3_4             = "3.4.1-RC1"
@@ -129,7 +129,8 @@ lazy val surface =
     .in(file("airframe-surface"))
     .settings(buildSettings)
     .settings(
-      name        := "airframe-surface",
+      name        := "light-surface",
+      Compile / packageDoc / publishArtifact := false,
       description := "A library for extracting object structure surface",
       // TODO: This is a temporary solution. Use AirSpec after Scala 3 support of Surface is completed
       libraryDependencies += "org.scalameta" %%% "munit" % "0.7.29" % Test,

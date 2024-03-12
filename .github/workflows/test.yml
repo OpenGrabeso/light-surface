@@ -25,5 +25,5 @@ jobs:
         cache: 'sbt'
     - name: Run tests
       env:
-        GITHUB_TOKEN: ${{ secrets.BUILD_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.ORG_TOKEN }}
       run: sbt ++test
