@@ -18,7 +18,7 @@ import java.text.DateFormat
 import java.util.Date
 
 import wvlet.log.LogSupport
-import wvlet.airframe.surface.{Primitive, Surface, Zero}
+import wvlet.airframe.surface.{Primitive, Surface}
 
 import scala.collection.mutable
 import scala.reflect.ClassTag
@@ -33,7 +33,7 @@ object TypeConverter extends LogSupport {
 
   def convert[T](value: T, targetType: Surface): Option[Any] = {
     if (value == null) {
-      Some(Zero.zeroOf(targetType))
+      Some(null)
     } else {
       if (targetType.isPrimitive) {
         convertToPrimitive(value, targetType)

@@ -244,7 +244,7 @@ class SimpleObjectBuilder(surface: Surface) extends ObjectBuilder with StandardB
     trace(s"holder contents: $holder")
     val factory = surface.objectFactory.get
     val args = for (p <- surface.params) yield {
-      get(p.name.canonicalName).getOrElse(Zero.zeroOf(p.surface))
+      get(p.name.canonicalName).orNull
     }
     trace(s"build: ${surface} from args:${args.mkString(", ")}")
     factory.newInstance(args)

@@ -16,7 +16,7 @@ package wvlet.airframe.surface.reflect
 /**
   */
 import wvlet.airframe.surface.CanonicalNameFormatter.*
-import wvlet.airframe.surface.{CName, MethodParameter, MethodSurface, Zero}
+import wvlet.airframe.surface.{CName, MethodParameter, MethodSurface}
 import wvlet.log.LogSupport
 
 //--------------------------------------
@@ -56,11 +56,4 @@ class MethodCallBuilder(m: MethodSurface, owner: AnyRef) extends StandardBuilder
     }
   }
 
-  def execute: Any = {
-    trace(s"holder: $holder")
-    val args = for (p <- m.args) yield {
-      get(p.name).getOrElse(Zero.zeroOf(p.surface))
-    }
-    m.call(owner, args: _*)
-  }
 }
