@@ -291,9 +291,6 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q):
       val typeArgs     = typeArgsOf(t.simplified).map(surfaceOf(_))
       val methodParams = constructorParametersOf(t)
       // val isStatic     = !t.typeSymbol.flags.is(Flags.Local)
-      val factory = createObjectFactoryOf(t) match
-        case Some(x) => '{ Some(${ x }) }
-        case None    => '{ None }
 
       '{
         new wvlet.airframe.surface.GenericSurface(
@@ -340,41 +337,6 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q):
             lookupTable.getOrElse(t.name, TypeRepr.of[AnyRef])
           }
           Some(cstr.appliedToTypes(typeArgs))
-
-  private def createObjectFactoryOf(targetType: TypeRepr): Option[Expr[ObjectFactory]] =
-    val ts    = targetType.typeSymbol
-    val flags = ts.flags
-    if flags.is(Flags.Abstract) || flags.is(Flags.Module) || hasAbstractMethods(targetType) || isPathDependentType(
-        targetType
-      )
-    then None
-    else
-      getResolvedConstructorOf(targetType).map { cstr =>
-        val argListList = methodArgsOf(targetType, ts.primaryConstructor)
-        val newClassFn = Lambda(
-          owner = Symbol.spliceOwner,
-          tpe = MethodType(List("args"))(_ => List(TypeRepr.of[Seq[Any]]), _ => TypeRepr.of[Any]),
-          rhsFn = (sym: Symbol, paramRefs: List[Tree]) =>
-            val args  = paramRefs.head.asExprOf[Seq[Any]].asTerm
-            var index = 0
-            val fn = argListList.foldLeft[Term](cstr) { (prev, argList) =>
-              val argExtractors = argList.map { a =>
-                // args(i+1)
-                val extracted = Select.unique(args, "apply").appliedTo(Literal(IntConstant(index)))
-                index += 1
-                // classOf[A].cast(args(i+1))
-                clsCast(extracted, a.tpe)
-              }
-              Apply(prev, argExtractors.toList)
-            }
-            // println(s"== ${fn.show}")
-            fn.changeOwner(sym)
-        )
-        val expr = '{
-          ObjectFactory.newFactory(${ newClassFn.asExprOf[Seq[Any] => Any] })
-        }
-        expr
-      }
 
   private def hasAbstractMethods(t: TypeRepr): Boolean =
     t.typeSymbol.methodMembers.exists(_.flags.is(Flags.Abstract))
