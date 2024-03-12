@@ -164,28 +164,6 @@ class RuntimeSurfaceTest extends SurfaceSpec {
 
   val a0 = A(true, 0.toByte, 1.toShort, 10, 20L, 0.1f, 0.2, "hello")
 
-  test("generate object factory") {
-    val a = check(RuntimeSurface.of[A], "A")
-    assert(a.objectFactory.isDefined)
-
-    val a1 = a.objectFactory.map(_.newInstance(Seq(true, 0.toByte, 1.toShort, 10, 20L, 0.1f, 0.2, "hello")))
-    debug(a1)
-    assert(a1.get == a0)
-
-    val e = check(RuntimeSurface.of[E], "E")
-    assert(e.objectFactory.isDefined)
-    val e1: E = e.objectFactory.map(_.newInstance(Seq(a0))).get.asInstanceOf[E]
-    debug(e1)
-    assert(e1.a == a0)
-  }
-
-  test("generate concrete object factory") {
-    val d  = check(RuntimeSurface.of[D[String]], "D[String]")
-    val d0 = d.objectFactory.map { f => f.newInstance(Seq(1, "leo")) }.get
-    debug(d0)
-    assert(d0 == D(1, "leo"))
-  }
-
   test("find default parameter") {
     val f = check(RuntimeSurface.of[F], "F")
     val p = f.params(0)

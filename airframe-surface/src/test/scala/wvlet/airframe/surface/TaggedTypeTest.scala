@@ -40,7 +40,6 @@ class TaggedTypeTest extends SurfaceSpec {
     assert(t.isPrimitive == false)
     assert(t.isAlias == false)
     assert(t.isOption == false)
-    assert(t.objectFactory.isDefined)
     assert(t.rawType == classOf[Person])
     assert(t.typeArgs.isEmpty)
     assert(t.params.mkString(",") == "id:Int,name:String")

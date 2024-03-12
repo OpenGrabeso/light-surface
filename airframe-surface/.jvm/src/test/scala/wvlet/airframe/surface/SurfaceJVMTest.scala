@@ -23,12 +23,6 @@ object SurfaceJVMTest {
 
 import SurfaceJVMTest.*
 class SurfaceJVMTest extends SurfaceSpec {
-  test("resolve ParSeq") {
-    pendingUntil("ParSeq is not available in Scala 2.13")
-    // import scala.collection.parallel.ParSeq
-    // check(Surface.of[ParSeq[Int]], "ParSeq[Int]")
-  }
-
   test("resolve java util type") {
     check(Surface.of[File], "File")
     check(Surface.of[java.util.Date], "Date")

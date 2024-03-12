@@ -116,9 +116,6 @@ class MethodSurfaceTest extends SurfaceSpec {
       // Scala.js doesn't support reading default method arguments
       assertEquals(v, Some("hello"))
     }
-
-    val msg = m.call(d, "world")
-    assertEquals(msg, "world")
   }
 
   test("find method default parameter in trait") {

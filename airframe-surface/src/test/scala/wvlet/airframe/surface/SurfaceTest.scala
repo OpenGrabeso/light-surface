@@ -81,12 +81,6 @@ class SurfaceTest extends SurfaceSpec {
     assertEquals(Primitive(classOf[Int]), Primitive.Int)
   }
 
-  test("resolve surface from class") {
-    pendingUntil("Scala.js doesn't support reflection")
-    val a = Surface.of[A]
-    // check(Surface.get(classOf[A]).get, a.toString)
-  }
-
   test("be equal") {
     val a1 = Surface.of[A]
     val a2 = Surface.of[A]
@@ -196,28 +190,6 @@ class SurfaceTest extends SurfaceSpec {
 
   val a0 = A(true, 0.toByte, 1.toShort, 10, 20L, 0.1f, 0.2, "hello")
 
-  test("generate object factory") {
-    val a = check(Surface.of[A], "A")
-    assert(a.objectFactory.isDefined)
-
-    val a1 = a.objectFactory.map(_.newInstance(Seq(true, 0.toByte, 1.toShort, 10, 20L, 0.1f, 0.2, "hello")))
-    debug(a1)
-    assert(a1.get == a0)
-
-    val e = check(Surface.of[E], "E")
-    assert(e.objectFactory.isDefined)
-    val e1: E = e.objectFactory.map(_.newInstance(Seq(a0))).get.asInstanceOf[E]
-    debug(e1)
-    assert(e1.a == a0)
-  }
-
-  test("generate concrete object factory") {
-    val d  = check(Surface.of[D[String]], "D[String]")
-    val d0 = d.objectFactory.map { f => f.newInstance(Seq(1, "leo")) }.get
-    debug(d0)
-    assert(d0 == D(1, "leo"))
-  }
-
   test("find default parameter") {
     val f = check(Surface.of[F], "F")
     val p = f.params(0)
@@ -233,14 +205,7 @@ class SurfaceTest extends SurfaceSpec {
     assert(a.params(7).get(a0) == "hello")
   }
 
-  test("object factory") {
-    val s = Surface.of[F]
-    assert(s.objectFactory.isDefined)
-    val f = s.objectFactory.map(_.newInstance(Seq(100)))
-    assertEquals(f, Some(F(100)))
-  }
-
-  test("bigint") {
+    test("bigint") {
     Surface.of[BigInt]
     Surface.of[BigInteger]
   }

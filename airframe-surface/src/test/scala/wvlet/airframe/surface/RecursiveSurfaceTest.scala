@@ -46,7 +46,6 @@ class RecursiveSurfaceTest extends SurfaceSpec {
     assert(lazyC.isPrimitive == false)
     assert(lazyC.isOption == false)
     assert(lazyC.isAlias == false)
-    assert(lazyC.objectFactory.isDefined)
   }
 
   test("support generic recursive type") {

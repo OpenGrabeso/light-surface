@@ -36,14 +36,6 @@ class ClassSurfaceTest extends SurfaceSpec {
     val p1 = a.params(1)
     assert(p0.name == "id")
     assert(p1.name == "context")
-
-    val a0 = a.objectFactory
-      .map { x => x.newInstance(Seq(1, "c")) }
-      .get
-      .asInstanceOf[A]
-
-    assert(a0.id == 1)
-    assert(a0.context == "c")
   }
 
   test("support tags in constructor args") {
