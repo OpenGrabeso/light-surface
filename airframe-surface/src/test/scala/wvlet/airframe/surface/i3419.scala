@@ -13,9 +13,10 @@
  */
 package wvlet.airframe.surface
 
-import wvlet.airspec.AirSpec
+import org.scalatest.funsuite.AnyFunSuite
+import org.scalatest.matchers.should
 
-object i3419 extends AirSpec {
+class i3419 extends AnyFunSuite with should.Matchers {
 
   class QPrivate private (val id: Int)
 
@@ -27,19 +28,19 @@ object i3419 extends AirSpec {
 
   test("Handle private constructor") {
     val s = Surface.of[QPrivate]
-    debug(s.params)
+    //debug(s.params)
     s.params.size shouldBe 0
   }
 
   test("Handle protected constructor") {
     val s = Surface.of[QProtected]
-    debug(s.params)
+    //debug(s.params)
     s.params.size shouldBe 0
   }
 
   test("Handle package private constructor") {
     val s = Surface.of[O.QPackagePrivate]
-    debug(s.params)
+    //debug(s.params)
     s.params.size shouldBe 0
   }
 }

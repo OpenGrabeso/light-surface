@@ -13,9 +13,10 @@
  */
 package wvlet.airframe.surface
 
-import wvlet.airspec.AirSpec
+import org.scalatest.funsuite.AnyFunSuite
+import org.scalatest.matchers.should
 
-object i3418 extends AirSpec {
+class i3418 extends AnyFunSuite with should.Matchers {
 
   case class A[P](data: List[(String, P)])
   case class AA[T, P](data: List[(T, P)])
@@ -25,7 +26,7 @@ object i3418 extends AirSpec {
 
   test("Support generic List of tuples") {
     val s = Surface.of[S]
-    debug(s.params)
+    //debug(s.params)
     s.params.size shouldBe 1
     val p1 = s.params(0)
     p1.name shouldBe "a"
@@ -36,7 +37,7 @@ object i3418 extends AirSpec {
 
   test("Support generic List of tuples with two type parameters") {
     val s = Surface.of[SS]
-    debug(s.params)
+    //debug(s.params)
     s.params.size shouldBe 1
     val p1 = s.params(0)
     p1.name shouldBe "a"

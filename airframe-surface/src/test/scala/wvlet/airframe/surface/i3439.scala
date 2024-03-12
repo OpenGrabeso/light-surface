@@ -13,9 +13,10 @@
  */
 package wvlet.airframe.surface
 
-import wvlet.airspec.AirSpec
+import org.scalatest.funsuite.AnyFunSuite
+import org.scalatest.matchers.should
 
-object i3439 extends AirSpec {
+class i3439 extends AnyFunSuite with should.Matchers {
 
   trait Base {
     class InnerType {

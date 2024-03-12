@@ -13,9 +13,10 @@
  */
 package wvlet.airframe.surface
 
-import wvlet.airspec.AirSpec
+import org.scalatest.funsuite.AnyFunSuite
+import org.scalatest.matchers.should
 
-object i3416 extends AirSpec {
+class i3416 extends AnyFunSuite with should.Matchers {
 
   object O {
     class C(private[O] val id: Int) {
@@ -25,7 +26,7 @@ object i3416 extends AirSpec {
 
   test("List package private fields as parameters") {
     val s = Surface.of[O.C]
-    debug(s.params)
+    //debug(s.params)
     s.params.size shouldBe 1
     val p1 = s.params(0)
     p1.name shouldBe "id"
