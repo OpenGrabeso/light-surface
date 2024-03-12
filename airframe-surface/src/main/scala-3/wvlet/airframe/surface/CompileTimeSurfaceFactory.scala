@@ -678,7 +678,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q):
           methodArgAccessor = ${ methodArgAccessor }
         )
       }
-    println(paramExprs.map(_.show).mkString("\n"))
+    // println(paramExprs.map(_.show).mkString("\n"))
     Expr.ofSeq(paramExprs)
 
   private def getTree(e: Expr[?]): Tree =
@@ -746,7 +746,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q):
       methodsOfInternal(t).asTerm
     ).asExprOf[Seq[MethodSurface]]
 
-    println(s"===  methodOf: ${t.typeSymbol.fullName} => \n${expr.show}")
+    // println(s"===  methodOf: ${t.typeSymbol.fullName} => \n${expr.show}")
     expr
 
   private val seenMethodParent = scala.collection.mutable.Set[TypeRepr]()
@@ -881,7 +881,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q):
   private def enumerationWorkaround(m: Symbol, t: TypeRepr): Boolean = {
     val params = methodParametersOf(t, m)
     val args = methodArgsOf(t, m).flatten
-    println(s"m $m ${args.map(_.tpe.show).mkString(",")}  ${params.show}")
+    // println(s"m $m ${args.map(_.tpe.show).mkString(",")}  ${params.show}")
     t.baseClasses.exists(_.fullName.startsWith("scala.Enumeration.")) // this will match both Value and ValueSet
   }
     // note: it would be possible to let id, hashCode and equals pass through if desired
