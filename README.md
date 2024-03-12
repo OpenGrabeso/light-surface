@@ -1,7 +1,10 @@
 #### Light Surface
 
 Fork of [Airframe Surface](https://github.com/wvlet/airframe/tree/main/airframe-surface) with some functionality removed.
-The fork uses the same package name as the original library, so it can be used as a drop-in replacement. It is published to GitHub Packages under the group id `org.opengrabeso/light-surface`.
+The fork uses the same class names as the original library, so it can be used as a drop-in replacement, but it uses a different package names because
+AirSpec requires the functionality of the original Airframe Surface library.
+
+It is published to GitHub Packages under the group id `org.opengrabeso/light-surface`.
 
 ### Motivation
 

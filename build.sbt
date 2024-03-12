@@ -31,9 +31,6 @@ addCommandAlias(
 // Reload build.sbt on changes
 Global / onChangedBuildSource := ReloadOnSourceChanges
 
-// ideSkipProject is used only for IntelliJ IDEA
-Global / excludeLintKeys ++= Set(ideSkipProject)
-
 // Disable the pipelining available since sbt-1.4.0. It caused compilation failure
 ThisBuild / usePipelining := false
 
@@ -125,7 +122,7 @@ val surfaceJVMDependencies = { scalaVersion: String =>
   }
 }
 
-lazy val root =
+lazy val surface =
   crossProject(JVMPlatform, JSPlatform)
     .crossType(CrossType.Pure)
     .in(file("airframe-surface"))
@@ -136,6 +133,7 @@ lazy val root =
       // TODO: This is a temporary solution. Use AirSpec after Scala 3 support of Surface is completed
       libraryDependencies += "org.scalameta" %%% "munit" % "0.7.29" % Test,
       libraryDependencies += "org.scalatest" %%% "scalatest" % "3.2.11" % Test,
+      libraryDependencies += "org.wvlet.airframe" %%% "airframe-log" % AIRFRAME_VERSION,
       libraryDependencies ++= surfaceDependencies(scalaVersion.value)
     )
     .jvmSettings(
@@ -145,17 +143,7 @@ lazy val root =
     )
     .jsSettings(jsBuildSettings)
 
-
-val logDependencies = { scalaVersion: String =>
-  scalaVersion match {
-    case s if s.startsWith("3.") =>
-      Seq.empty
-    case _ =>
-      Seq("org.scala-lang" % "scala-reflect" % scalaVersion % Provided)
-  }
-}
-
-val logJVMDependencies = Seq(
-  // For rotating log files
-  "ch.qos.logback" % "logback-core" % "1.3.14"
+lazy val root = project.in(file(".")).aggregate(surface.jvm, surface.js).settings(
+  name := "light-surface"
 )
+
