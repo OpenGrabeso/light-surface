@@ -1,5 +1,4 @@
 import scalajsbundler.JSDOMNodeJSEnv
-import xerial.sbt.pack.PackPlugin.{projectSettings, publishPackArchiveTgz}
 
 val SCALA_2_12          = "2.12.19"
 val SCALA_2_13          = "2.13.13"
@@ -73,39 +72,15 @@ ThisBuild / usePipelining := false
 // Use Scala 3 by default as scala-2 specific source code is relatively small now
 ThisBuild / scalaVersion := SCALA_3
 
-ThisBuild / organization := "org.wvlet.airframe"
-
-// Use dynamic snapshot version strings for non tagged versions
-ThisBuild / dynverSonatypeSnapshots := true
-// Use coursier friendly version separator
-ThisBuild / dynverSeparator := "-"
+ThisBuild / organization := "org.opengrabeso"
 
 val buildSettings = Seq[Setting[_]](
   licenses += ("Apache-2.0", url("https://www.apache.org/licenses/LICENSE-2.0.html")),
-  homepage := Some(url("https://wvlet.org/airframe")),
-  scmInfo := Some(
-    ScmInfo(
-      browseUrl = url("https://github.com/wvlet/airframe"),
-      connection = "scm:git@github.com:wvlet/airframe.git"
-    )
-  ),
-  developers := List(
-    Developer(id = "leo", name = "Taro L. Saito", email = "leo@xerial.org", url = url("http://xerial.org/leo"))
-  ),
   // Exclude compile-time only projects. This is a workaround for bloop,
   // which cannot resolve Optional dependencies nor compile-internal dependencies.
-  pomPostProcess        := excludePomDependency(Seq("airspec_2.12", "airspec_2.13", "airspec_3")),
   crossScalaVersions    := targetScalaVersions,
   crossPaths            := true,
   publishMavenStyle     := true,
-  mimaPreviousArtifacts := Set("org.wvlet.airframe" %%% s"${name.value}" % AIRFRAME_BINARY_COMPAT_VERSION),
-  mimaFailOnNoPrevious  := false,
-  mimaBinaryIssueFilters ++= {
-    import com.typesafe.tools.mima.core.*
-    Seq(
-      ProblemFilters.exclude[MissingClassProblem]("wvlet.airframe.http.internal.*")
-    )
-  },
   javacOptions ++= Seq("-source", "11", "-target", "11"),
   scalacOptions ++= Seq(
     "-feature",
@@ -149,9 +124,6 @@ val scala3Only = Seq[Setting[_]](
 // Do not run tests concurrently to avoid JMX registration failures
 val runTestSequentially = Seq[Setting[_]](Test / parallelExecution := false)
 
-// We need to define this globally as a workaround for https://github.com/sbt/sbt/pull/3760
-ThisBuild / publishTo := sonatypePublishToBundle.value
-
 val jsBuildSettings = Seq[Setting[_]](
   // #2117 For using java.util.UUID.randomUUID() in Scala.js
   libraryDependencies ++= Seq(
@@ -172,11 +144,7 @@ val noPublish = Seq(
   // Explicitly skip the doc task because protobuf related Java files causes no type found error
   Compile / doc / sources                := Seq.empty,
   Compile / packageDoc / publishArtifact := false,
-  // Do not check binary compatibility for unpublished projects
-  mimaPreviousArtifacts := Set.empty
 )
-
-Global / excludeLintKeys ++= Set(sonatypeProfileName, sonatypeSessionName)
 
 lazy val root =
   project
@@ -184,17 +152,6 @@ lazy val root =
     .settings(name := "airframe-root")
     .settings(buildSettings)
     .settings(noPublish)
-    .settings(
-      sonatypeProfileName := "org.wvlet",
-      sonatypeSessionName := {
-        if (sys.env.isDefinedAt("SCALAJS")) {
-          // Use a different session for Scala.js projects
-          s"${sonatypeSessionName.value} for Scala.js"
-        } else {
-          sonatypeSessionName.value
-        }
-      }
-    )
     .aggregate((jvmProjects ++ jsProjects): _*)
 
 // JVM projects for scala-community build. This should have no tricky setup and should support Scala 2.12 and Scala 3
@@ -278,10 +235,6 @@ def excludePomDependency(excludes: Seq[String]) = { node: XmlNode =>
       }
   }).transform(node).head
 }
-
-def airframeDIDependencies = Seq(
-  "javax.annotation" % "javax.annotation-api" % JAVAX_ANNOTATION_API_VERSION
-)
 
 def crossBuildSources(scalaBinaryVersion: String, baseDir: String, srcType: String = "main"): Seq[sbt.File] = {
   val scalaMajorVersion = scalaBinaryVersion.split("\\.").head
