@@ -32,7 +32,6 @@ trait SurfaceSpec extends AnyFunSuite with LogSupport with AirSpecBridge {
     assert(s.isAlias == false)
     assert(s.isOption == false)
     assert(s.isPrimitive == true)
-    assert(s.objectFactory.isEmpty == true)
     s
   }
 }

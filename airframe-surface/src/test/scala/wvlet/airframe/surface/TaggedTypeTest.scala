@@ -50,7 +50,6 @@ class TaggedTypeTest extends SurfaceSpec {
     assert(n.isPrimitive == true)
     assert(n.isAlias == true)
     assert(n.isOption == false)
-    assert(n.objectFactory.isEmpty)
   }
 
   test("tag tagged type") {

@@ -22,11 +22,6 @@ object MultipleConstructorArgsTest extends AirSpec {
 
   test("support muliple constructor args") {
     val s: Surface = Surface.of[MultiC]
-    s.objectFactory shouldBe defined
-
-    val f = s.objectFactory.get
     s.params.size shouldBe 2
-    val i = f.newInstance(Seq(1, "hello"))
-    i.asInstanceOf[MultiC].msg shouldBe "1:hello"
   }
 }

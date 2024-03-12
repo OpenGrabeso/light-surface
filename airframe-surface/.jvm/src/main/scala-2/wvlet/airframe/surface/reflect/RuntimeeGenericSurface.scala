@@ -31,7 +31,7 @@ class RuntimeGenericSurface(
     override val params: Seq[Parameter] = Seq.empty,
     val outer: Option[AnyRef] = None,
     isStatic: Boolean
-) extends GenericSurface(rawType, typeArgs, params, None)
+) extends GenericSurface(rawType, typeArgs, params)
     with LogSupport {
   self =>
 
@@ -123,14 +123,6 @@ class RuntimeGenericSurface(
           )
           throw e
       }
-    }
-  }
-
-  override val objectFactory: Option[ObjectFactory] = {
-    if (rawType.getConstructors.isEmpty) {
-      None
-    } else {
-      Some(new ReflectObjectFactory())
     }
   }
 }

@@ -278,8 +278,6 @@ case class TaggedSurface(base: Surface, tag: Surface) extends Surface {
   override def isAlias: Boolean       = base.isAlias
   override def isPrimitive: Boolean   = base.isPrimitive
   override def dealias: Surface       = base.dealias
-
-  override def objectFactory: Option[ObjectFactory] = base.objectFactory
 }
 
 /**
@@ -299,7 +297,6 @@ case class IntersectionSurface(left: Surface, right: Surface) extends Surface {
   override def isAlias: Boolean                     = left.isAlias
   override def isPrimitive: Boolean                 = left.isPrimitive
   override def dealias: Surface                     = left.dealias
-  override def objectFactory: Option[ObjectFactory] = left.objectFactory
 }
 
 /**
@@ -319,7 +316,6 @@ case class UnionSurface(left: Surface, right: Surface) extends Surface {
   override def isAlias: Boolean                     = left.isAlias
   override def isPrimitive: Boolean                 = left.isPrimitive
   override def dealias: Surface                     = UnionSurface(left.dealias, right.dealias)
-  override def objectFactory: Option[ObjectFactory] = left.objectFactory.orElse(right.objectFactory)
 }
 
 case object AnyRefSurface extends GenericSurface(classOf[AnyRef]) {
@@ -332,7 +328,6 @@ case object AnyRefSurface extends GenericSurface(classOf[AnyRef]) {
   * @param rawType
   * @param typeArgs
   * @param params
-  * @param objectFactory
   */
 class GenericSurface(
     override val rawType: Class[_],
@@ -410,7 +405,6 @@ case class LazySurface(override val rawType: Class[_], fullName: String) extends
   override def isOption                             = ref.isOption
   override def isAlias                              = ref.isAlias
   override def isPrimitive                          = ref.isPrimitive
-  override def objectFactory: Option[ObjectFactory] = ref.objectFactory
 }
 
 case class ClassMethodSurface(

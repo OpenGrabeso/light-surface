@@ -38,7 +38,6 @@ trait Surface extends Serializable {
     */
   def isEnum: Boolean = false
 
-  def objectFactory: Option[ObjectFactory] = None
   def withOuter(outer: AnyRef): Surface    = this
 }
 

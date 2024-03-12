@@ -87,16 +87,8 @@ trait StandardBuilder extends GenericBuilder with LogSupport {
       case p if canBuildFromBuffer(p.surface)      => Value(value)
       case p if canBuildFromStringValue(p.surface) => Value(value)
 
-      case p if p.surface.objectFactory.isEmpty =>
+      case p =>
         Value(value) // When no constructor to build p is found
-      case p => {
-        // nested object
-        val b = new SimpleObjectBuilder(p.surface)
-        for (x <- p.surface.params) {
-          b.set(x.name.canonicalName, x.get(value))
-        }
-        Holder(b)
-      }
     } getOrElse Value(value)
 
     holder += name -> v
@@ -218,7 +210,6 @@ trait StandardBuilder extends GenericBuilder with LogSupport {
 }
 
 class SimpleObjectBuilder(surface: Surface) extends ObjectBuilder with StandardBuilder with LogSupport {
-  require(surface.objectFactory.isDefined, s"No object factory is found for ${surface}")
 
   protected def findParameter(name: String) = {
     assert(surface != null)
@@ -241,12 +232,6 @@ class SimpleObjectBuilder(surface: Surface) extends ObjectBuilder with StandardB
   }
 
   def build: Any = {
-    trace(s"holder contents: $holder")
-    val factory = surface.objectFactory.get
-    val args = for (p <- surface.params) yield {
-      get(p.name.canonicalName).orNull
-    }
-    trace(s"build: ${surface} from args:${args.mkString(", ")}")
-    factory.newInstance(args)
+    null
   }
 }

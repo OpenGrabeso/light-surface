@@ -29,7 +29,6 @@ case class RecordSurface(
     override val isSeq: Boolean = false,
     override val isArray: Boolean = false,
     override val isMap: Boolean = false,
-    override val objectFactory: Option[ObjectFactory] = None
 ) extends Surface {
   override def dealias: Surface = this
 
@@ -42,7 +41,6 @@ case class RecordSurface(
     require(newParam.index == params.length, s"index must be ${params.length}: ${newParam.index}")
     this.copy(params = params :+ newParam)
   }
-  def withObjectFactory(newFactory: ObjectFactory): RecordSurface = this.copy(objectFactory = Some(newFactory))
   def asRequired: RecordSurface                                   = this.copy(isRequired = true)
   def asSecret: RecordSurface                                     = this.copy(isSecret = true)
   def asPrimitive: RecordSurface                                  = this.copy(isPrimitive = true)

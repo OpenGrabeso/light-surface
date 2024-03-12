@@ -533,41 +533,6 @@ private[surface] object SurfaceMacros {
       q"IndexedSeq(..${surfaceParams})"
     }
 
-    def createObjectFactoryOf(targetType: c.Type): Option[c.Tree] = {
-      val ts = targetType.typeSymbol
-      if (ts.isAbstract || ts.isModuleClass || isAbstract(targetType) || isPathDependentType(targetType)) {
-        None
-      } else {
-        findPrimaryConstructorOf(targetType).map { primaryConstructor =>
-          val argsList   = methodArgsOf(targetType, primaryConstructor)
-          var index: Int = 0
-          val argExtractor: List[List[c.Tree]] =
-            for (arg <- argsList) yield {
-              for (a <- arg) yield {
-                val param =
-                  Apply(Ident(TermName("args")), List(Literal(Constant(index))))
-                index += 1
-                // TODO natural type conversion (e.g., Int -> Long, etc.)
-                q"${param}.asInstanceOf[${a.tpe}]"
-              }
-            }
-
-          // Create a constructor call
-          val id = Ident(targetType.typeSymbol)
-          val constructor: c.Tree =
-            argExtractor.foldLeft[c.Tree](Select(New(id), termNames.CONSTRUCTOR))((x, arg) => Apply(x, arg))
-
-          // TODO: Support companion object call for instantiating the object
-          val expr =
-            q"""new wvlet.airframe.surface.ObjectFactory {
-            def newInstance(args:Seq[Any]) : ${targetType} = { $constructor }
-          }
-          """
-          expr
-        }
-      }
-    }
-
     private val genericSurfaceWithConstructorFactory: SurfaceFactory =
       new SurfaceFactory {
         override def isDefinedAt(t: c.Type): Boolean = {
@@ -576,10 +541,6 @@ private[surface] object SurfaceMacros {
         override def apply(t: c.Type): c.Tree = {
           val primaryConstructor = findPrimaryConstructorOf(t).get
           val typeArgs           = typeArgsOf(t).map(surfaceOf(_))
-          val factory = createObjectFactoryOf(t) match {
-            case Some(x) => q"Some($x)"
-            case None    => q"None"
-          }
 
           val expr = q"""
           new wvlet.airframe.surface.GenericSurface(

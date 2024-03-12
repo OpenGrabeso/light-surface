@@ -1,5 +1,3 @@
-import scalajsbundler.JSDOMNodeJSEnv
-
 val SCALA_2_12          = "2.12.19"
 val SCALA_2_13          = "2.13.13"
 val SCALA_3             = "3.3.3"
@@ -9,7 +7,7 @@ val targetScalaVersions = SCALA_3 :: uptoScala2
 // Add this for using snapshot versions
 ThisBuild / resolvers ++= Resolver.sonatypeOssRepos("snapshots")
 
-val AIRSPEC_VERSION                 = sys.env.getOrElse("AIRSPEC_VERSION", "24.2.3")
+val AIRFRAME_VERSION                 = sys.env.getOrElse("AIRSPEC_VERSION", "24.2.3")
 val SCALACHECK_VERSION              = "1.17.0"
 val JS_JAVA_LOGGING_VERSION         = "1.0.0"
 val JAVAX_ANNOTATION_API_VERSION    = "1.3.2"
@@ -71,7 +69,7 @@ val buildSettings = Seq[Setting[_]](
   },
   testFrameworks += new TestFramework("wvlet.airspec.Framework"),
   libraryDependencies ++= Seq(
-    "org.wvlet.airframe" %%% "airspec"    % AIRSPEC_VERSION    % Test,
+    "org.wvlet.airframe" %%% "airspec"    % AIRFRAME_VERSION    % Test,
     "org.scalacheck"     %%% "scalacheck" % SCALACHECK_VERSION % Test
   ) ++ {
     if (scalaVersion.value.startsWith("3."))
@@ -104,87 +102,6 @@ val jsBuildSettings = Seq[Setting[_]](
   coverageEnabled := false
 )
 
-val noPublish = Seq(
-  publishArtifact := false,
-  publish         := {},
-  publishLocal    := {},
-  publish / skip  := true,
-  // This must be Nil to use crossScalaVersions of individual modules in `+ projectJVM/xxxx` tasks
-  crossScalaVersions := Nil,
-  // Explicitly skip the doc task because protobuf related Java files causes no type found error
-  Compile / doc / sources                := Seq.empty,
-  Compile / packageDoc / publishArtifact := false,
-)
-
-lazy val root =
-  project
-    .in(file("."))
-    .settings(name := "airframe-root")
-    .settings(buildSettings)
-    .settings(noPublish)
-    .aggregate((jvmProjects ++ jsProjects): _*)
-
-// JVM projects for scala-community build. This should have no tricky setup and should support Scala 2.12 and Scala 3
-lazy val communityBuildProjects: Seq[ProjectReference] = Seq(
-  log.jvm,
-  surface.jvm,
-)
-
-// Other JVM projects supporting Scala 2.12 - Scala 2.13
-lazy val jvmProjects: Seq[ProjectReference] = communityBuildProjects
-
-// Scala.js build (Scala 2.12, 2.13, and 3.x)
-lazy val jsProjects: Seq[ProjectReference] = Seq(
-  log.js,
-  surface.js,
-)
-
-// For Scala 2.12
-lazy val projectJVM =
-  project
-    .settings(noPublish)
-    .settings(
-      // Skip importing aggregated projects in IntelliJ IDEA
-      ideSkipProject := true,
-      // Use a stable coverage directory name without containing scala version
-      coverageDataDir := target.value
-    )
-    .aggregate(jvmProjects: _*)
-
-lazy val projectJS =
-  project
-    .settings(noPublish)
-    .settings(
-      // Skip importing aggregated projects in IntelliJ IDEA
-      ideSkipProject := true
-    )
-    .aggregate(jsProjects: _*)
-
-// A scoped project only for Dotty (Scala 3).
-// This is a workaround as projectJVM/test shows compile errors for non Scala 3 ready projects
-lazy val projectDotty =
-  project
-    .settings(noPublish)
-    .settings(
-      // Skip importing aggregated projects in IntelliJ IDEA
-      ideSkipProject := true
-    )
-    .aggregate(
-      log.jvm,
-      surface.jvm,
-    )
-
-def parallelCollection(scalaVersion: String) = {
-  if (scalaVersion.startsWith("2.13.")) {
-    Seq("org.scala-lang.modules" %% "scala-parallel-collections" % "0.2.0")
-  } else {
-    Seq.empty
-  }
-}
-
-// // To use airframe in other airframe modules, we need to reference airframeMacros project
-// lazy val airframeMacrosJVMRef = airframeMacrosJVM % Optional
-// lazy val airframeMacrosRef    = airframeMacros    % Optional
 val surfaceDependencies = { scalaVersion: String =>
   scalaVersion match {
     case s if s.startsWith("3.") =>
@@ -208,7 +125,7 @@ val surfaceJVMDependencies = { scalaVersion: String =>
   }
 }
 
-lazy val surface =
+lazy val root =
   crossProject(JVMPlatform, JSPlatform)
     .crossType(CrossType.Pure)
     .in(file("airframe-surface"))
@@ -227,7 +144,6 @@ lazy val surface =
       libraryDependencies += "javax.annotation" % "javax.annotation-api" % JAVAX_ANNOTATION_API_VERSION % Test
     )
     .jsSettings(jsBuildSettings)
-    .dependsOn(log)
 
 
 val logDependencies = { scalaVersion: String =>
@@ -243,32 +159,3 @@ val logJVMDependencies = Seq(
   // For rotating log files
   "ch.qos.logback" % "logback-core" % "1.3.14"
 )
-
-// airframe-log should have minimum dependencies
-lazy val log: sbtcrossproject.CrossProject =
-  crossProject(JVMPlatform, JSPlatform)
-    .crossType(CrossType.Pure)
-    .in(file("airframe-log"))
-    .settings(buildSettings)
-    .settings(
-      name        := "airframe-log",
-      description := "Fancy logger for Scala",
-      scalacOptions ++= {
-        if (scalaVersion.value.startsWith("3.")) Seq("-source:3.0-migration")
-        else Nil
-      },
-      libraryDependencies ++= logDependencies(scalaVersion.value)
-    )
-    .jvmSettings(
-      libraryDependencies ++= logJVMDependencies,
-      runTestSequentially
-    )
-    .jsSettings(
-      jsBuildSettings,
-      libraryDependencies ++= Seq(
-        ("org.scala-js" %%% "scalajs-java-logging" % JS_JAVA_LOGGING_VERSION).cross(CrossVersion.for3Use2_13)
-      )
-    )
-
-// Workaround for com.twitter:util-core_2.12:21.4.0 (depends on 1.1.2)
-ThisBuild / libraryDependencySchemes += "org.scala-lang.modules" %% "scala-parser-combinators" % "always"

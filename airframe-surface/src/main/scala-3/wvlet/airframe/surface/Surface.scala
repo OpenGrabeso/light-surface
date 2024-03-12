@@ -39,7 +39,6 @@ trait Surface extends Serializable:
     */
   def isEnum: Boolean = classOf[scala.reflect.Enum].isAssignableFrom(rawType)
 
-  def objectFactory: Option[ObjectFactory] = None
   def withOuter(outer: AnyRef): Surface    = this
 
 /**
