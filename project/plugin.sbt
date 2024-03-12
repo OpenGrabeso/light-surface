@@ -8,4 +8,6 @@ addSbtPlugin("ch.epfl.scala" % "sbt-scalafix" % "0.11.1")
 val SCALAJS_VERSION = sys.env.getOrElse("SCALAJS_VERSION", "1.15.0")
 addSbtPlugin("org.scala-js"  % "sbt-scalajs"         % SCALAJS_VERSION)
 
+addSbtPlugin("com.codecommit" % "sbt-github-packages" % "0.5.3")
+
 scalacOptions ++= Seq("-deprecation", "-feature")

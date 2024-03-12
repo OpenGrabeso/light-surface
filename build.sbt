@@ -1,8 +1,23 @@
-val SCALA_2_12          = "2.12.19"
+ThisBuild / githubOwner := "OpenGrabeso"
+
+ThisBuild / githubRepository := "packages"
+
+Global / excludeLintKeys += ThisBuild / githubTokenSource // prevent warning in SBT
+
+def tokenSettings = Seq[Setting[_]](
+  githubTokenSource := TokenSource.GitConfig("github.token") || TokenSource.Environment("BUILD_TOKEN") || TokenSource.Environment("GITHUB_TOKEN")
+)
+
+Global / excludeLintKeys += ThisBuild / githubTokenSource
+
+publish / skip := true
+
+publishLocal / skip := true
+
+val VERSION = "0.0.1-SNAPSHOT"
 val SCALA_2_13          = "2.13.13"
 val SCALA_3             = "3.3.3"
-val uptoScala2          = SCALA_2_13 :: SCALA_2_12 :: Nil
-val targetScalaVersions = SCALA_3 :: uptoScala2
+val targetScalaVersions = SCALA_3 :: SCALA_2_13 :: Nil
 
 // Add this for using snapshot versions
 ThisBuild / resolvers ++= Resolver.sonatypeOssRepos("snapshots")
@@ -11,17 +26,6 @@ val AIRFRAME_VERSION                 = sys.env.getOrElse("AIRSPEC_VERSION", "24.
 val SCALACHECK_VERSION              = "1.17.0"
 val JS_JAVA_LOGGING_VERSION         = "1.0.0"
 val JAVAX_ANNOTATION_API_VERSION    = "1.3.2"
-
-// [Development purpose] publish all artifacts to the local repo
-addCommandAlias(
-  "publishAllLocal",
-  s"+ projectJVM/publishLocal; + projectJS/publishLocal;"
-)
-
-addCommandAlias(
-  "publishJSLocal",
-  s"+ projectJS/publishLocal"
-)
 
 // Allow using Ctrl+C in sbt without exiting the prompt
 // Global / cancelable := true
@@ -39,7 +43,9 @@ ThisBuild / scalaVersion := SCALA_3
 
 ThisBuild / organization := "org.opengrabeso"
 
-val buildSettings = Seq[Setting[_]](
+val buildSettings = tokenSettings ++ Seq[Setting[_]](
+  version := VERSION,
+  scmInfo := Some(ScmInfo(url("https://github.com/OpenGrabeso/light-surface"), "scm:git:github.com/OpenGrabeso/light-surface")),
   licenses += ("Apache-2.0", url("https://www.apache.org/licenses/LICENSE-2.0.html")),
   // Exclude compile-time only projects. This is a workaround for bloop,
   // which cannot resolve Optional dependencies nor compile-internal dependencies.
@@ -74,16 +80,6 @@ val buildSettings = Seq[Setting[_]](
     else
       Seq("org.scala-lang.modules" %%% "scala-collection-compat" % "2.11.0")
   }
-)
-
-val scala2Only = Seq[Setting[_]](
-  scalaVersion       := SCALA_2_13,
-  crossScalaVersions := uptoScala2
-)
-
-val scala3Only = Seq[Setting[_]](
-  scalaVersion       := SCALA_3,
-  crossScalaVersions := List(SCALA_3)
 )
 
 // Do not run tests concurrently to avoid JMX registration failures
@@ -143,6 +139,8 @@ lazy val surface =
     .jsSettings(jsBuildSettings)
 
 lazy val root = project.in(file(".")).aggregate(surface.jvm, surface.js).settings(
-  name := "light-surface"
+  name := "light-surface",
+  tokenSettings,
+  crossScalaVersions := targetScalaVersions
 )
 
