@@ -585,8 +585,7 @@ private[surface] object SurfaceMacros {
           new wvlet.airframe.surface.GenericSurface(
             classOf[$t],
             IndexedSeq(..$typeArgs),
-            params = ${methodParametersOf(t, primaryConstructor)},
-            objectFactory=${factory}
+            params = ${methodParametersOf(t, primaryConstructor)}
         )"""
           expr
         }

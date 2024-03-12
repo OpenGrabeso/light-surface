@@ -299,8 +299,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q):
         new wvlet.airframe.surface.GenericSurface(
           ${ clsOf(t) },
           ${ Expr.ofSeq(typeArgs) }.toIndexedSeq,
-          params = ${ methodParams },
-          objectFactory = ${ factory }
+          params = ${ methodParams }
         )
       }
   }

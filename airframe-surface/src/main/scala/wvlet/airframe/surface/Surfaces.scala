@@ -210,7 +210,7 @@ object Primitive {
 }
 
 case class Alias(override val name: String, override val fullName: String, ref: Surface)
-    extends GenericSurface(ref.rawType, ref.typeArgs, ref.params, ref.objectFactory) {
+    extends GenericSurface(ref.rawType, ref.typeArgs, ref.params) {
   override def toString: String     = s"${name}:=${ref.name}"
   override def isAlias: Boolean     = true
   override def isPrimitive: Boolean = ref.isPrimitive
@@ -223,7 +223,7 @@ case class HigherKindedTypeSurface(
     override val fullName: String,
     ref: Surface,
     override val typeArgs: Seq[Surface]
-) extends GenericSurface(ref.rawType, typeArgs, ref.params, ref.objectFactory) {
+) extends GenericSurface(ref.rawType, typeArgs, ref.params) {
   override def toString: String = {
     val s = if (typeArgs.isEmpty) {
       name
@@ -338,7 +338,7 @@ class GenericSurface(
     override val rawType: Class[_],
     override val typeArgs: Seq[Surface] = Seq.empty,
     override val params: Seq[Parameter] = Seq.empty,
-    override val objectFactory: Option[ObjectFactory] = None
+    //override val objectFactory: Option[ObjectFactory] = None
 ) extends Surface {
   private def getClassName: String = {
     try {
