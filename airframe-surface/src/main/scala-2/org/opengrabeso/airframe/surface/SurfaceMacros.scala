@@ -116,27 +116,6 @@ private[surface] object SurfaceMacros {
         .exists(_ == m.owner)
     }
 
-    private def createMethodCaller(t: c.Type, m: MethodSymbol, methodArgs: Seq[MethodArg]): c.Tree = {
-      val methodName = TermName(m.name.encodedName.toString)
-      if (m.isPublic) {
-        if (methodArgs.size == 0) {
-          q"""
-         Some({ (x: Any, args: Seq[Any]) =>  x.asInstanceOf[${t}].${methodName} })
-            """
-        } else {
-          val argList = methodArgs.zipWithIndex.map { case (x, i) =>
-            q"args(${i}).asInstanceOf[${x.tpe}]"
-          }
-          q"""
-         Some({ (x: Any, args: Seq[Any]) =>  x.asInstanceOf[${t}].${methodName}(..${argList}) })
-            """
-        }
-      } else {
-        // Fallback for an unknown error
-        q"None"
-      }
-    }
-
     def createMethodSurfaceOf(targetType: c.Type): c.Tree = {
       if (methodMemo.contains(targetType)) {
         methodMemo(targetType)
@@ -164,9 +143,7 @@ private[surface] object SurfaceMacros {
               val methodArgs = methodArgsOf(targetType, m).flatten
               val args =
                 methodParametersOf(m.owner.typeSignature, m, methodArgs)
-              // Generate code for supporting ClassMethodSurface.call(instance, args)
-              val methodCaller = createMethodCaller(targetType, m, methodArgs)
-              lst += q"org.opengrabeso.airframe.surface.ClassMethodSurface(${mod}, ${owner}, ${name}, ${ret}, ${args}.toIndexedSeq, ${methodCaller})"
+              lst += q"org.opengrabeso.airframe.surface.ClassMethodSurface(${mod}, ${owner}, ${name}, ${ret}, ${args}.toIndexedSeq)"
             } catch {
               case e: Throwable =>
                 c.warning(c.enclosingPosition, s"${e.getMessage}")
