@@ -1,2 +1,0 @@
-- sql: |
-    SELECT student, score FROM tests LATERAL VIEW explode(scores) t AS score
