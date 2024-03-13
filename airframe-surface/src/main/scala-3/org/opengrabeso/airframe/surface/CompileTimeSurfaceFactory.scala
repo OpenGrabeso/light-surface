@@ -628,10 +628,11 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q):
       .toSeq
       // Exclude primitive surfaces as it is already defined in Primitive object
       .filterNot(x => primitiveTypeFactory.isDefinedAt(x._1))
+      .map((tpe, order) => (tpe, (!lazySurface.contains(tpe), order))) // first list all lazy vals, otherwise there is a risk of forward reference error across strict vals
       .sortBy(_._2)
       .reverse
       .foreach { case (tpe, order) =>
-        // Update the cache so that the next call of surfaceOf method will use the local varaible reference
+        // Update the cache so that the next call of surfaceOf method will use the local variable reference
         surfaceToVar += tpe -> Symbol.newVal(
           Symbol.spliceOwner,
           // Use alphabetically ordered variable names
@@ -672,7 +673,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q):
       methodsOfInternal(t).asTerm
     ).asExprOf[Seq[MethodSurface]]
 
-    println(s"===  methodOf: ${t.typeSymbol.fullName} => \n${expr.show}")
+    // println(s"===  methodOf: ${t.typeSymbol.fullName} => \n${expr.show}")
     expr
 
   private val seenMethodParent = scala.collection.mutable.Set[TypeRepr]()
