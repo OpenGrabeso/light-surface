@@ -313,15 +313,16 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q):
 
     private def genericTypeWithConstructorFactory: Factory = {
       case t
-          if !t.typeSymbol.flags.is(Flags.Abstract) && !t.typeSymbol.flags.is(Flags.Trait)
+          if !t.typeSymbol.flags.is(Flags.Abstract) && !t.typeSymbol.flags.is(Flags.Trait) && !hasHiddenAnnotation(t.typeSymbol)
             && Option(t.typeSymbol.primaryConstructor)
               .exists { p =>
                 p.exists && !p.flags.is(Flags.Private) && !p.flags.is(Flags.Protected) &&
+                !hasHiddenAnnotation(p) &&
                 p.privateWithin.isEmpty && p.paramSymss.nonEmpty
-              } =>
-        val typeArgs     = typeArgsOf(t.simplified).map(surfaceOf(_))
-        val methodParams = constructorParametersOf(t)
-        // val isStatic     = !t.typeSymbol.flags.is(Flags.Local)
+            } =>
+      val typeArgs     = typeArgsOf(t.simplified).map(surfaceOf(_))
+      val methodParams = constructorParametersOf(t)
+      // val isStatic     = !t.typeSymbol.flags.is(Flags.Local)
 
         '{
           new org.opengrabeso.airframe.surface.GenericSurface(
@@ -499,9 +500,9 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q):
         lst.isEmpty ||
         // Remove type params or implicit ClassTag evidences as MethodSurface can't pass type parameters
         !lst.forall(x => x.isTypeParam || (x.flags.is(Flags.Implicit) && x.typeRef <:< TypeRepr.of[ClassTag[_]]))
-      }
+      }.map(_.filterNot(hasHiddenAnnotation))
 
-      paramss.map { params =>
+      paramss.map(_.filterNot(hasHiddenAnnotation)).map { params =>
         params.zipWithIndex
           .map((x, i) => (x, i + 1, x.tree))
           .collect { case (s: Symbol, i: Int, v: ValDef) =>
@@ -525,6 +526,11 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q):
             MethodArg(v.name, resolved, defaultValueGetter, defaultMethodArgGetter, isImplicit)
           }
       }
+
+    private def hasHiddenAnnotation(s: Symbol): Boolean =
+      val t = TypeRepr.of[org.opengrabeso.airframe.surface.hidden]
+      //if (s.hasAnnotation(t.typeSymbol)) println(s"Hidden ${s.name}")
+      s.hasAnnotation(t.typeSymbol)
 
     private def constructorParametersOf(t: TypeRepr): Expr[Seq[MethodParameter]] =
       methodParametersOf(t, t.typeSymbol.primaryConstructor)
@@ -607,7 +613,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q):
           surfaceToVar += tpe -> Symbol.newVal(
             Symbol.spliceOwner,
             // Use alphabetically ordered variable names
-            f"__s${uniqueId}${surfaceVarCount}%03X",
+            f"__${t.typeSymbol.name}_${tpe.typeSymbol.name}_s${uniqueId}${surfaceVarCount}%03X",
             TypeRepr.of[Surface],
             if lazySurface.contains(tpe) then
               // If the surface itself is lazy, we need to eagerly initialize it to update the surface cache
@@ -692,7 +698,8 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q):
             !x.flags.is(Flags.Implicit) &&
             !x.flags.is(Flags.FieldAccessor) &&
             // Exclude methods from Java
-            !x.flags.is(Flags.JavaDefined)
+            !x.flags.is(Flags.JavaDefined) &&
+            !hasHiddenAnnotation(x)
           }
           .filter { x =>
             val name = x.name
