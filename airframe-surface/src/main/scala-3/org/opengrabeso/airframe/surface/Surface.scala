@@ -51,3 +51,4 @@ object Surface:
 
   inline def of[A]: Surface                   = ${ CompileTimeSurfaceFactory.surfaceOf[A] }
   inline def methodsOf[A]: Seq[MethodSurface] = ${ CompileTimeSurfaceFactory.methodsOf[A] }
+  inline def inheritedMethodsOf[A]: Seq[(Surface, Seq[MethodSurface])] = ${ CompileTimeSurfaceFactory.inheritedMethodsOf[A] }
