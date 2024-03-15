@@ -299,6 +299,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q):
           && Option(t.typeSymbol.primaryConstructor)
             .exists { p =>
               p.exists && !p.flags.is(Flags.Private) && !p.flags.is(Flags.Protected) &&
+              !hasHiddenAnnotation(p) &&
               p.privateWithin.isEmpty && p.paramSymss.nonEmpty
             } =>
       val typeArgs     = typeArgsOf(t.simplified).map(surfaceOf(_))
@@ -488,7 +489,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q):
       lst.isEmpty ||
       // Remove type params or implicit ClassTag evidences as MethodSurface can't pass type parameters
       !lst.forall(x => x.isTypeParam || (x.flags.is(Flags.Implicit) && x.typeRef <:< TypeRepr.of[ClassTag[_]]))
-    }
+    }.map(_.filterNot(hasHiddenAnnotation)) // remove any hidden parameters
 
     paramss.map { params =>
       params.zipWithIndex
@@ -533,6 +534,11 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q):
           MethodArg(v.name, resolved, defaultValueGetter, defaultMethodArgGetter, isImplicit, isRequired, isSecret)
         }
     }
+
+  private def hasHiddenAnnotation(s: Symbol): Boolean =
+    val t = TypeRepr.of[org.opengrabeso.airframe.surface.hidden]
+    if (s.hasAnnotation(t.typeSymbol)) println(s"Hidden ${s.name}")
+    s.hasAnnotation(t.typeSymbol)
 
   private def hasSecretAnnotation(s: Symbol): Boolean =
     val t = TypeRepr.of[org.opengrabeso.airframe.surface.secret]
@@ -636,7 +642,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q):
         surfaceToVar += tpe -> Symbol.newVal(
           Symbol.spliceOwner,
           // Use alphabetically ordered variable names
-          f"__s${surfaceVarCount}%03X",
+          f"__${t.typeSymbol.name}_${tpe.typeSymbol.name}_s${surfaceVarCount}%03X",
           TypeRepr.of[Surface],
           if lazySurface.contains(tpe) then
             // If the surface itself is lazy, we need to eagerly initialize it to update the surface cache
@@ -782,7 +788,8 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q):
           !x.flags.is(Flags.Implicit) &&
           !x.flags.is(Flags.FieldAccessor) &&
           // Exclude methods from Java
-          !x.flags.is(Flags.JavaDefined)
+          !x.flags.is(Flags.JavaDefined) &&
+          !hasHiddenAnnotation(x)
         }
         .filter { x =>
           val name = x.name
@@ -805,8 +812,8 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q):
 
   // workaround https://github.com/lampepfl/dotty/issues/19825 - surface of enumeration value methods fails
   private def enumerationWorkaround(m: Symbol, t: TypeRepr): Boolean = {
-    val params = methodParametersOf(t, m)
-    val args = methodArgsOf(t, m).flatten
+    //val params = methodParametersOf(t, m)
+    //val args = methodArgsOf(t, m).flatten
     // println(s"m $m ${args.map(_.tpe.show).mkString(",")}  ${params.show}")
     t.baseClasses.exists(_.fullName.startsWith("scala.Enumeration.")) // this will match both Value and ValueSet
   }
