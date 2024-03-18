@@ -22,7 +22,6 @@ import scala.collection.mutable
   */
 package object surface {
   val surfaceCache       = new ConcurrentHashMap[String, Surface]().asScala
-  val methodSurfaceCache = new ConcurrentHashMap[String, Seq[MethodSurface]]().asScala
 
   def getCached(fullName: String): Surface =
     surfaceCache.getOrElse(fullName, throw new IllegalArgumentException(s"Surface ${fullName} is not found in cache"))

@@ -18,6 +18,3 @@ package org.opengrabeso.airframe.surface
 object SurfaceFactory:
   inline def of[A]: Surface                   = ${ CompileTimeSurfaceFactory.surfaceOf[A] }
   inline def methodsOf[A]: Seq[MethodSurface] = ${ CompileTimeSurfaceFactory.methodsOf[A] }
-
-  // TODO support inner clases in Scala.js
-  def localSurfaceOf[A](context: Any): Surface = ???
