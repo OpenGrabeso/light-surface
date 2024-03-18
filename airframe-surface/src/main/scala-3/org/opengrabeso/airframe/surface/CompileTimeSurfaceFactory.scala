@@ -19,8 +19,6 @@ import scala.reflect.ClassTag
 
 private[surface] object CompileTimeSurfaceFactory:
 
-  type SurfaceMatcher = PartialFunction[Type[_], Expr[Surface]]
-
   def surfaceOf[A](using tpe: Type[A], quotes: Quotes): Expr[Surface] =
     import quotes.*
     import quotes.reflect.*
@@ -368,15 +366,6 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q):
             }
             Some(cstr.appliedToTypes(typeArgs))
 
-    private def hasAbstractMethods(t: TypeRepr): Boolean =
-      t.typeSymbol.methodMembers.exists(_.flags.is(Flags.Abstract))
-
-    private def isPathDependentType(t: TypeRepr): Boolean =
-      !t.typeSymbol.flags.is(Flags.JavaStatic) && (t match
-        case t: TypeBounds => true
-        case _             => false
-      )
-
     private def genericTypeFactory: Factory = {
       case t if t =:= TypeRepr.of[Any] =>
         '{ Alias("Any", "scala.Any", AnyRefSurface) }
@@ -395,10 +384,6 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q):
           * Try(EnumType.valueOf(s)).toOption }}
           */
         val enumType = t.typeSymbol.companionModule
-        val valueOfMethod = enumType.methodMember("valueOf").headOption match
-          case Some(m) => m
-          case None =>
-            sys.error(s"valueOf method not found in ${t}")
         val newFn = Lambda(
           owner = Symbol.spliceOwner,
           tpe = MethodType(List("cl", "s"))(
@@ -601,12 +586,6 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q):
       // println(paramExprs.map(_.show).mkString("\n"))
       Expr.ofSeq(paramExprs)
 
-    private def getTree(e: Expr[?]): Tree =
-      val f = e.getClass().getDeclaredField("tree")
-      f.setAccessible(true)
-      val tree = f.get(e)
-      tree.asInstanceOf[Tree]
-
     def methodsOf(t: TypeRepr, uniqueId: String, inherited: Boolean): Expr[Seq[MethodSurface]] =
       // Run just for collecting known surfaces. seen variable will be updated
       methodsOfInternal(t, inherited)
@@ -690,77 +669,8 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q):
         val expr = Expr.ofSeq(methodSurfaces)
         expr
 
-    private def inheritedMethodsOf(t: TypeRepr): Expr[Seq[(Surface, Seq[MethodSurface])]] =
-      val parentClasses = t.baseClasses.map(_.typeRef)
-      val methodsFromAllParents = parentClasses.zipWithIndex.map { (parent, index) =>
-        val parentSurface = surfaceOf(parent)
-        '{ (${ parentSurface }, ${ methodsOf(parent, s"${parent.typeSymbol.name}_${index.toString}_", false) }) }
-      }
-      Expr.ofSeq(methodsFromAllParents)
-
-    private def isTypeParam(t: TypeRepr): Boolean =
-      t match
-        case TypeRef(prefix, typeName) if prefix.toString == "NoPrefix" => true
-        case _                                                          => false
-
     private def clsCast(term: Term, t: TypeRepr): Term =
       Select.unique(term, "asInstanceOf").appliedToType(t)
-
-    private def createMethodCaller(
-        objectType: TypeRepr,
-        m: Symbol,
-        methodArgss: List[List[MethodArg]]
-    ): Expr[Option[(Any, Seq[Any]) => Any]] =
-      // Build { (x: Any, args: Seq[Any]) => x.asInstanceOf[t].<method>(.. args) }
-      val methodTypeParams: List[TypeParamClause] = m.tree match
-        case df: DefDef =>
-          df.paramss.collect { case t: TypeParamClause =>
-            t
-          }
-        case _ =>
-          List.empty
-
-      val lambda = Lambda(
-        owner = Symbol.spliceOwner,
-        tpe = MethodType(List("x", "args"))(_ => List(TypeRepr.of[Any], TypeRepr.of[Seq[Any]]), _ => TypeRepr.of[Any]),
-        rhsFn = (sym, params) =>
-          val x    = params(0).asInstanceOf[Term]
-          val args = params(1).asInstanceOf[Term]
-          val expr = clsCast(x, objectType).select(m)
-
-          var index = 0
-          val argList: List[List[Term]] = methodArgss.map { lst =>
-            lst.collect {
-              // If the arg is implicit, no need to explicitly bind it
-              case arg if !arg.isImplicit =>
-                val extracted = Select.unique(args, "apply").appliedTo(Literal(IntConstant(index)))
-                index += 1
-                clsCast(extracted, arg.tpe)
-            }
-          }
-          if argList.isEmpty then
-            val newExpr = m.tree match
-              case d: DefDef if d.trailingParamss.nonEmpty =>
-                // An empty arg method, e.g., def methodName()
-                expr.appliedToNone
-              case _ =>
-                // No arg method, e.g., def methodName: Unit
-                expr
-            newExpr.changeOwner(sym)
-          else
-            // Bind to function arguments
-            val newExpr =
-              if methodTypeParams.isEmpty then expr.appliedToArgss(argList)
-              else
-                // For generic functions, type params also need to be applied
-                val dummyTypeParams = methodTypeParams.map(x => TypeRepr.of[Any])
-                // println(s"---> ${m.name} type param count: ${methodTypeParams.size}, arg size: ${argList.size}")
-                expr
-                  .appliedToTypes(dummyTypeParams)
-                  .appliedToArgss(argList)
-            newExpr.changeOwner(sym)
-      )
-      '{ Some(${ lambda.asExprOf[(Any, Seq[Any]) => Any] }) }
 
     private def localMethodsOf(t: TypeRepr, inherited: Boolean): Seq[Symbol] =
       def allMethods =
@@ -839,25 +749,3 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q):
     if m.flags.is(Flags.Abstract) then mod |= MethodModifier.ABSTRACT
     mod
 
-  def surfaceFromClass(cl: Class[?]): Expr[Surface] =
-    val name         = cl.getName
-    val rawType      = Class.forName(name)
-    val constructors = rawType.getConstructors
-    val (typeArgs, params) = if constructors.nonEmpty then
-      val primaryConstructor = constructors(0)
-      val paramSurfaces: Seq[Expr[Surface]] = primaryConstructor.getParameterTypes.map { paramType =>
-        val tastyType = quotes.reflect.TypeRepr.typeConstructorOf(paramType)
-        val session = Session()
-        session.surfaceOf(tastyType)
-      }.toSeq
-      // FIXME: Use TastyInspector as runtime-like reflection for Scala 3
-      val params: Seq[Expr[Parameter]] = Seq.empty
-      (Expr.ofSeq(paramSurfaces), Expr.ofSeq(params))
-    else ('{ Seq.empty[Surface] }, '{ Seq.empty[Parameter] })
-
-    '{
-      new org.opengrabeso.airframe.surface.GenericSurface(
-        rawType = Class.forName(${ Expr(name) }),
-        typeArgs = ${ typeArgs }
-      )
-    }
