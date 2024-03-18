@@ -14,7 +14,7 @@ publish / skip := true
 
 publishLocal / skip := true
 
-val VERSION = "0.1.1"
+val VERSION = "0.2.0"
 val SCALA_3_4             = "3.4.1-RC1"
 
 // Add this for using snapshot versions
