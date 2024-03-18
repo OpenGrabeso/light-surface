@@ -30,16 +30,6 @@ trait Parameter extends ParameterBase {
   def surface: Surface
 
   /**
-    * Returns true if this parameter has @required annotation
-    */
-  def isRequired: Boolean
-
-  /**
-    * Returns true if this parameter has @required annotation
-    */
-  def isSecret: Boolean
-
-  /**
    * Get the default value of this parameter. For example the default value of x in class A(x:Int = 10) is 10
    *
    * @return
@@ -100,8 +90,6 @@ case class StaticMethodParameter(
     method: MethodRef,
     index: Int,
     name: String,
-    isRequired: Boolean,
-    isSecret: Boolean,
     surface: Surface,
     private val defaultValue: Option[Any] = None,
 ) extends MethodParameter {

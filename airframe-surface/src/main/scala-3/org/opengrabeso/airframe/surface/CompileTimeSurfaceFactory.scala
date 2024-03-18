@@ -91,8 +91,6 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q):
     defaultValueGetter: Option[Symbol],
     defaultMethodArgGetter: Option[Symbol],
     isImplicit: Boolean,
-    isRequired: Boolean,
-    isSecret: Boolean
   )
 
   private class Session:
@@ -528,8 +526,6 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q):
 
             val resolved: TypeRepr = resolveType(v.tpt.tpe)
 
-            val isSecret           = hasSecretAnnotation(s)
-            val isRequired         = hasRequiredAnnotation(s)
             val isImplicit         = s.flags.is(Flags.Implicit)
             val defaultValueGetter = defaultValueMethods.find(m => m.name.endsWith(s"$$${i}"))
 
@@ -539,16 +535,9 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q):
                 // println(s"=== target: ${m.name}, ${m.owner.name}")
                 m.name == targetMethodName
               }
-            MethodArg(v.name, resolved, defaultValueGetter, defaultMethodArgGetter, isImplicit, isRequired, isSecret)
+            MethodArg(v.name, resolved, defaultValueGetter, defaultMethodArgGetter, isImplicit)
           }
       }
-
-    private def hasSecretAnnotation(s: Symbol): Boolean =
-      val t = TypeRepr.of[org.opengrabeso.airframe.surface.secret]
-      s.hasAnnotation(t.typeSymbol)
-    private def hasRequiredAnnotation(s: Symbol): Boolean =
-      val t = TypeRepr.of[org.opengrabeso.airframe.surface.required]
-      s.hasAnnotation(t.typeSymbol)
 
     private def constructorParametersOf(t: TypeRepr): Expr[Seq[MethodParameter]] =
       methodParametersOf(t, t.typeSymbol.primaryConstructor)
@@ -605,8 +594,6 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q):
             method = ${ constructorRef },
             index = ${ Expr(i) },
             name = ${ Expr(paramName) },
-            isRequired = ${ Expr(field.isRequired) },
-            isSecret = ${ Expr(field.isSecret) },
             surface = ${ surfaceOf(paramType) },
             defaultValue = ${ defaultValue },
           )
