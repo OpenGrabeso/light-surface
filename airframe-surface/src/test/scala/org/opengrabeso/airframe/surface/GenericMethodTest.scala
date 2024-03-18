@@ -29,4 +29,28 @@ class GenericMethodTest extends AnyFunSuite with should.Matchers {
     m.returnType shouldBe Surface.of[String]
   }
 
+  case class Gen[X](value: X) {
+    def pass(x: X): X = x
+    def myself: Gen[X] = this
+    def wrap(x: X): Gen[X] = Gen[X](value)
+    def unwrap(x: Gen[X]): X = x.value
+  }
+
+  test("Methods of generic type") {
+    val typeSurface = Surface.of[Gen[String]]
+    val methods = Surface.methodsOf[Gen[String]]
+    methods.size shouldBe 4
+    val pass = methods.find(_.name == "pass").get
+    pass.returnType shouldBe Surface.of[String]
+    /*
+    val myself = methods.find(_.name == "pass").get
+    myself.returnType shouldBe typeSurface
+    val wrap = methods.find(_.name == "pass").get
+    wrap.returnType shouldBe typeSurface
+    val unwrap = methods.find(_.name == "pass").get
+    unwrap.returnType shouldBe Surface.of[String]
+
+     */
+  }
+
 }
