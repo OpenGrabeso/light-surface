@@ -23,7 +23,7 @@ trait SurfaceSpec extends AnyFunSuite with LogSupport with AirSpecBridge {
   protected def check(body: => Surface, expectedName: String): Surface = {
     val surface = body
     debug(s"[${surface.getClass.getSimpleName}] $surface, ${surface.fullName}")
-    assertEquals(surface.toString, expectedName)
+    assert(surface.toString == expectedName)
     surface
   }
 

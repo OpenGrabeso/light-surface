@@ -13,6 +13,8 @@
  */
 package org.opengrabeso.airframe.surface
 
+import org.scalatest.funsuite.AnyFunSuite
+
 object RecursiveMethodParamTest {
   case class Node(parent: Option[Node])
 
@@ -21,7 +23,7 @@ object RecursiveMethodParamTest {
   }
 }
 
-class RecursiveMethodParamTest extends munit.FunSuite {
+class RecursiveMethodParamTest extends AnyFunSuite {
   import RecursiveMethodParamTest._
 
   // ....

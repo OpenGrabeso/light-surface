@@ -11,14 +11,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.opengrabeso.airframe.surface.reflect
+package org.opengrabeso.airframe.surface
+package reflect
 
-import scala.language.higherKinds
-import org.opengrabeso.airframe.surface.Surface
+import org.scalatest.funsuite.AnyFunSuite
 
 /**
   */
-class NamedParameterTest extends munit.FunSuite {
+class NamedParameterTest extends AnyFunSuite {
 
   trait MyService[F[_]] {
     def hello: F[String]
@@ -28,13 +28,13 @@ class NamedParameterTest extends munit.FunSuite {
 
   test("read F[_]") {
     val s = Surface.of[MyService[A]]
-    assertEquals(s.toString, "MyService[A]")
+    assert(s.toString == "MyService[A]")
 
     val m = Surface.methodsOf[MyService[A]]
     assert(m.headOption.isDefined)
 
     val m1 = m.head
     // info(m1.returnType.getClass())
-    assertEquals(m1.returnType.toString, "F[String]")
+    assert(m1.returnType.toString ==  "F[String]")
   }
 }

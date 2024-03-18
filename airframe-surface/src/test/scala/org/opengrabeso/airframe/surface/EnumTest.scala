@@ -13,6 +13,7 @@
  */
 package org.opengrabeso.airframe.surface
 
+import org.scalatest.funsuite.AnyFunSuite
 /**
   */
 object EnumTest {
@@ -29,16 +30,16 @@ object EnumTest {
   }
 }
 
-class EnumTest extends munit.FunSuite {
+class EnumTest extends AnyFunSuite {
   import EnumTest.*
 
   test("Find Surface.stringExtractor") {
     Surface.of[Color] match {
       case s: EnumSurface =>
         val f = s.stringExtractor
-        assertEquals(f(classOf[Color], "Blue"), Some(Blue))
-        assertEquals(f(classOf[Color], "Red"), Some(Red))
-        assertEquals(f(classOf[Color], "White"), None)
+        assert(f(classOf[Color], "Blue") == Some(Blue))
+        assert(f(classOf[Color], "Red") == Some(Red))
+        assert(f(classOf[Color], "White") == None)
       case other =>
         fail(s"EnumSurface should be used: ${other.getClass}")
     }

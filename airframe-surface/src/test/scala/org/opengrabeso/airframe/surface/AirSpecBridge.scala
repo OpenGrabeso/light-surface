@@ -16,13 +16,7 @@ package org.opengrabeso.airframe.surface
 /**
   * Provide AirSpec-like helper
   */
-trait AirSpecBridge extends munit.Assertions {
+trait AirSpecBridge {
   def isScalaJS: Boolean   = AirSpecBridgeCompat.isScalaJS
   def isScala3JVM: Boolean = AirSpecBridgeCompat.isScala3JVM
-  def pendingUntil(msg: String): Unit = {
-    assume(false, msg)
-  }
-  def pending(msg: String): Unit = {
-    assume(false, msg)
-  }
 }

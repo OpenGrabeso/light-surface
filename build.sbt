@@ -85,13 +85,10 @@ lazy val surface =
       name        := "light-surface",
       Compile / packageDoc / publishArtifact := false,
       description := "A library for extracting object structure surface",
-      // TODO: This is a temporary solution. Use AirSpec after Scala 3 support of Surface is completed
-      libraryDependencies += "org.scalameta" %%% "munit" % "0.7.29" % Test,
-      libraryDependencies += "org.scalatest" %%% "scalatest" % "3.2.11" % Test,
+      libraryDependencies += "org.scalatest" %%% "scalatest" % "3.2.18" % Test,
       libraryDependencies += "org.wvlet.airframe" %%% "airframe-log" % AIRFRAME_VERSION
     )
     .jvmSettings(
-      // For adding PreDestroy, PostConstruct annotations to Java9
       libraryDependencies ++= surfaceJVMDependencies(scalaVersion.value)
     )
     .jsSettings(jsBuildSettings)
