@@ -13,11 +13,9 @@
  */
 package org.opengrabeso.airframe.surface.reflect
 
-import wvlet.log.LogSupport
-
 /**
   */
-object Path extends LogSupport {
+object Path {
   def root: Path    = Root
   def current: Path = Current
 

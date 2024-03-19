@@ -80,8 +80,11 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q):
   private type Factory = PartialFunction[TypeRepr, Expr[Surface]]
 
   def surfaceOf(tpe: Type[?]): Expr[Surface] =
+    surfaceOf(TypeRepr.of(using tpe))
+
+  private def surfaceOf(t: TypeRepr, useVarRef: Boolean = true): Expr[Surface] =
     val session = Session()
-    session.surfaceOf(TypeRepr.of(using tpe))
+    session.surfaceOf(t, useVarRef)
 
   private case class MethodArg(
     name: String,
@@ -718,15 +721,16 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q):
       t.baseClasses.exists(_.fullName.startsWith("scala.Enumeration.")) // this will match both Value and ValueSet
     }
 
-  def methodsOf(t: Type[?]): Expr[Seq[MethodSurface]] = {
+  def methodsOf(t: Type[?]): Expr[Seq[MethodSurface]] =
     val repr = TypeRepr.of(using t)
     val session = Session()
     session.methodsOf(repr, "_" + repr.typeSymbol.name + "_", true)
-  }
 
-  def inheritedMethodsOf(tpe: Type[?]): Expr[Seq[(Surface, Seq[MethodSurface])]] = {
+  def inheritedMethodsOf(tpe: Type[?]): Expr[Seq[(Surface, Seq[MethodSurface])]] =
     val t = TypeRepr.of(using tpe)
+    inheritedMethodsOf(t)
 
+  private def inheritedMethodsOf(t: TypeRepr): Expr[Seq[(Surface, Seq[MethodSurface])]] =
     val parentClasses = t.baseClasses.map(_.typeRef)
     val methodsFromAllParents = parentClasses.zipWithIndex.map { (parent, index) =>
       val session = Session()
@@ -734,7 +738,6 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q):
       '{ (${ parentSurface }, ${ session.methodsOf(parent, s"_${parent.typeSymbol.name}_${index.toString}_", false) }) }
     }
     Expr.ofSeq(methodsFromAllParents)
-  }
 
   private def modifierBitMaskOf(m: Symbol): Int =
     var mod = 0

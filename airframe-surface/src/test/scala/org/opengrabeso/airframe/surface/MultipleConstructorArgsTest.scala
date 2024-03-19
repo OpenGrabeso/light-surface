@@ -13,9 +13,10 @@
  */
 package org.opengrabeso.airframe.surface
 
-import wvlet.airspec.AirSpec
+import org.scalatest.funsuite.AnyFunSuite
+import org.scalatest.matchers.should
 
-object MultipleConstructorArgsTest extends AirSpec {
+class MultipleConstructorArgsTest extends AnyFunSuite with should.Matchers {
   case class MultiC(a: Int)(implicit val s: String) {
     def msg: String = s"${a}:${s}"
   }

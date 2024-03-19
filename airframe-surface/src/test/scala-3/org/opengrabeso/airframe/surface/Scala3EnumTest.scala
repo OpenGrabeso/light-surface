@@ -18,7 +18,7 @@ import org.scalatest.matchers.should
 
 import scala.jdk.CollectionConverters.*
 
-object Scala3EnumTest extends AnyFunSuite with should.Matchers:
+class Scala3EnumTest extends AnyFunSuite with should.Matchers:
 
   enum Color:
     case Red, Green, Blue

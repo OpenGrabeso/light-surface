@@ -15,14 +15,14 @@
 package org.opengrabeso.airframe.surface
 
 import org.scalatest.funsuite.AnyFunSuite
-import wvlet.log.LogSupport
 
 import scala.language.implicitConversions
 
-trait SurfaceSpec extends AnyFunSuite with LogSupport with AirSpecBridge {
+trait SurfaceSpec extends AnyFunSuite with AirSpecBridge {
+  def debug(s: => Any): Unit = {}
   protected def check(body: => Surface, expectedName: String): Surface = {
     val surface = body
-    debug(s"[${surface.getClass.getSimpleName}] $surface, ${surface.fullName}")
+    //debug(s"[${surface.getClass.getSimpleName}] $surface, ${surface.fullName}")
     assert(surface.toString == expectedName)
     surface
   }

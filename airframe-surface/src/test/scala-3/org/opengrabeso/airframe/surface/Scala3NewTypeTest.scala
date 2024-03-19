@@ -16,7 +16,7 @@ package org.opengrabeso.airframe.surface
 import org.scalatest.funsuite.AnyFunSuite
 import org.scalatest.matchers.should
 
-object Scala3NewTypeTest extends AnyFunSuite with should.Matchers:
+class Scala3NewTypeTest extends AnyFunSuite with should.Matchers:
   trait Label1
 
   test("support intersection type") {

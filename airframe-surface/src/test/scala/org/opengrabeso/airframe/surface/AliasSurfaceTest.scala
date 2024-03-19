@@ -13,11 +13,10 @@
  */
 package org.opengrabeso.airframe.surface
 
-import wvlet.log.LogSupport
 import org.scalatest.funsuite.AnyFunSuite
 /**
   */
-class AliasSurfaceTest extends AnyFunSuite with LogSupport {
+class AliasSurfaceTest extends AnyFunSuite {
 
   case class Holder[A](v: A)
   type MyInt = Holder[Int]
@@ -25,6 +24,6 @@ class AliasSurfaceTest extends AnyFunSuite with LogSupport {
 
   test("inject an alias to parameterized types into constructors") {
     val s = Surface.of[Component]
-    info(s)
+    //info(s)
   }
 }

@@ -14,14 +14,8 @@ publish / skip := true
 
 publishLocal / skip := true
 
-val VERSION = "0.2.0"
-val SCALA_3_4             = "3.4.1-RC1"
-
-// Add this for using snapshot versions
-ThisBuild / resolvers ++= Resolver.sonatypeOssRepos("snapshots")
-
-val AIRFRAME_VERSION                 = sys.env.getOrElse("AIRSPEC_VERSION", "24.2.3")
-val SCALACHECK_VERSION              = "1.17.0"
+val VERSION = "0.3.0"
+val SCALA_3             = "3.3.3"
 
 // Reload build.sbt on changes
 Global / onChangedBuildSource := ReloadOnSourceChanges
@@ -29,7 +23,7 @@ Global / onChangedBuildSource := ReloadOnSourceChanges
 // Disable the pipelining available since sbt-1.4.0. It caused compilation failure
 ThisBuild / usePipelining := false
 
-ThisBuild / scalaVersion := SCALA_3_4
+ThisBuild / scalaVersion := SCALA_3
 
 ThisBuild / organization := "org.opengrabeso"
 
@@ -52,11 +46,6 @@ val buildSettings = tokenSettings ++ Seq[Setting[_]](
     "-Wconf:msg=The syntax .* is no longer supported for vararg splices:s",
     "-Wconf:msg=Alphanumeric method .* is not declared infix:s",
   ),
-  testFrameworks += new TestFramework("wvlet.airspec.Framework"),
-  libraryDependencies ++= Seq(
-    "org.wvlet.airframe" %%% "airspec"    % AIRFRAME_VERSION    % Test,
-    "org.scalacheck"     %%% "scalacheck" % SCALACHECK_VERSION % Test
-  )
 )
 
 // Do not run tests concurrently to avoid JMX registration failures
@@ -86,7 +75,6 @@ lazy val surface =
       Compile / packageDoc / publishArtifact := false,
       description := "A library for extracting object structure surface",
       libraryDependencies += "org.scalatest" %%% "scalatest" % "3.2.18" % Test,
-      libraryDependencies += "org.wvlet.airframe" %%% "airframe-log" % AIRFRAME_VERSION
     )
     .jvmSettings(
       libraryDependencies ++= surfaceJVMDependencies(scalaVersion.value)
