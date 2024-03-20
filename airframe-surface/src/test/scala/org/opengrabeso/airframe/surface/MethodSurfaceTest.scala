@@ -14,6 +14,8 @@
 
 package org.opengrabeso.airframe.surface
 
+import org.scalatest.matchers.should
+
 object MethodExamples {
 
   class A {
@@ -53,10 +55,9 @@ object MethodExamples {
 }
 
 import org.opengrabeso.airframe.surface.MethodExamples._
-
 /**
   */
-class MethodSurfaceTest extends SurfaceSpec {
+class MethodSurfaceTest extends SurfaceSpec with should.Matchers {
 
   test("list methods") {
     val m = Surface.methodsOf[A]
@@ -132,5 +133,23 @@ class MethodSurfaceTest extends SurfaceSpec {
       case _ =>
         fail("F.mapInput method not found")
     }
+  }
+
+  test("get surface of primitive types") {
+    val iSurface = Surface.methodsOf[Int]
+    val dSurface = Surface.methodsOf[Double]
+    val bSurface = Surface.methodsOf[Boolean]
+    iSurface.map(_.name) should contain ("+") // surface contains all numeric operators
+    dSurface.map(_.name) should contain ("*")
+    bSurface.map(_.name) should contain ("&")
+  }
+
+  test("get surface of array types") {
+    val iSurface = Surface.methodsOf[Array[Int]]
+    val dSurface = Surface.methodsOf[Array[Double]]
+    val sSurface = Surface.methodsOf[Array[String]]
+    iSurface should not be empty
+    dSurface should not be empty
+    sSurface should not be empty
   }
 }
