@@ -148,8 +148,16 @@ class MethodSurfaceTest extends SurfaceSpec with should.Matchers {
     val iSurface = Surface.methodsOf[Array[Int]]
     val dSurface = Surface.methodsOf[Array[Double]]
     val sSurface = Surface.methodsOf[Array[String]]
-    iSurface should not be empty
-    dSurface should not be empty
-    sSurface should not be empty
+    iSurface.map(_.name) should contain ("length")
+    dSurface.map(_.name) should contain ("length")
+    sSurface.map(_.name) should contain ("length")
+    val applyMethod = dSurface.find(_.name == "apply").get
+    applyMethod.returnType shouldBe Surface.of[Double]
+
+    val iiSurface = Surface.inheritedMethodsOf[Array[String]]
+    iiSurface should not be empty
+    val arrayMethods = iiSurface.head
+    arrayMethods._2.map(_.name) should contain ("length")
+    arrayMethods._2.find(_.name == "apply").get.returnType shouldBe Surface.of[String]
   }
 }

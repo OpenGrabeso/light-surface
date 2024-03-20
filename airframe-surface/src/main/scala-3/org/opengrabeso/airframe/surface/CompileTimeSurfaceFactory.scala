@@ -731,8 +731,8 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q):
     inheritedMethodsOf(t)
 
   private def inheritedMethodsOf(t: TypeRepr): Expr[Seq[(Surface, Seq[MethodSurface])]] =
-    val parentClasses = t.baseClasses.map(_.typeRef)
-    val methodsFromAllParents = parentClasses.zipWithIndex.map { (parent, index) =>
+    val methodsFromAllParents = t.baseClasses.zipWithIndex.map { (parentCls, index) =>
+      val parent = t.baseType(parentCls) // when t is generic, we want to know the parent as generic as well
       val session = Session()
       val parentSurface = session.surfaceOf(parent)
       '{ (${ parentSurface }, ${ session.methodsOf(parent, s"_${parent.typeSymbol.name}_${index.toString}_", false) }) }
