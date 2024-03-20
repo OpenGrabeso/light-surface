@@ -16,6 +16,7 @@ import java.util.concurrent.atomic.AtomicInteger
 import scala.collection.immutable.ListMap
 import scala.quoted.*
 import scala.reflect.ClassTag
+import scala.util.chaining.*
 
 private[surface] object CompileTimeSurfaceFactory:
 
@@ -651,7 +652,13 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q):
       ).asExprOf[Seq[MethodSurface]]
 
       // println(s"===  methodOf: ${t.typeSymbol.fullName} => \n${expr.show}")
-      expr
+
+      // use a local class to avoid the code being included in the calling method, as that often leads to "Method too large:" error
+      '{
+          class MethodSurfaces:
+            def methodList: Seq[MethodSurface] = $expr
+          new MethodSurfaces().methodList
+      }
 
     private val seenMethodParent = scala.collection.mutable.Set[TypeRepr]()
 
@@ -742,9 +749,17 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q):
       val parent = t.baseType(parentCls) // when t is generic, we want to know the parent as generic as well
       val session = Session()
       val parentSurface = session.surfaceOf(parent)
-      '{ (${ parentSurface }, ${ session.methodsOf(parent, s"_${parent.typeSymbol.name}_${index.toString}_", false) }) }
+      val methods = session.methodsOf(parent, s"_${parent.typeSymbol.name}_${index.toString}_", false)
+      // println(s"ParentSurface size for ${t.show}-${parentCls}: ${parentSurface.show.length}")
+      '{
+        class InheritedMethodsOf:
+          def resultParentSurface = ${ parentSurface }
+          def resultMethodsOf =  ${ methods }
+          def value = (resultParentSurface, resultMethodsOf)
+        new InheritedMethodsOf().value
+      }
     }
-    Expr.ofSeq(methodsFromAllParents)
+    Expr.ofSeq(methodsFromAllParents) //.tap(e => println(e.show))
 
   private def modifierBitMaskOf(m: Symbol): Int =
     var mod = 0
