@@ -14,8 +14,8 @@ publish / skip := true
 
 publishLocal / skip := true
 
-val VERSION = "0.3.3"
-val SCALA_3             = "3.3.3"
+val VERSION = "0.4.0"
+val SCALA_3 = "3.3.3"
 
 // Reload build.sbt on changes
 Global / onChangedBuildSource := ReloadOnSourceChanges
@@ -60,11 +60,6 @@ val jsBuildSettings = Seq[Setting[_]](
   ),
 )
 
-def surfaceJVMDependencies(s: String) = Seq(
-  "org.scala-lang" %% "scala3-tasty-inspector" % s,
-  "org.scala-lang" %% "scala3-staging"         % s
-)
-
 lazy val surface =
   crossProject(JVMPlatform, JSPlatform)
     .crossType(CrossType.Pure)
@@ -75,9 +70,6 @@ lazy val surface =
       Compile / packageDoc / publishArtifact := false,
       description := "A library for extracting object structure surface",
       libraryDependencies += "org.scalatest" %%% "scalatest" % "3.2.18" % Test,
-    )
-    .jvmSettings(
-      libraryDependencies ++= surfaceJVMDependencies(scalaVersion.value)
     )
     .jsSettings(jsBuildSettings)
 
