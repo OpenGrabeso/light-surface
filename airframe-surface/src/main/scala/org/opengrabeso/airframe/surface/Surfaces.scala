@@ -39,32 +39,10 @@ trait Parameter extends ParameterBase {
 
 /**
   */
-trait ObjectFactory extends Serializable {
-  def newInstance(args: Seq[Any]): Any
-}
-
-object ObjectFactory {
-
-  /**
-    * Used internally for creating a new ObjectFactory instance from a given generic function
-    * @param f
-    * @return
-    */
-  def newFactory(f: Seq[Any] => Any): ObjectFactory = new ObjectFactory {
-    override def newInstance(args: Seq[Any]): Any = f(args)
-  }
-}
-
 case class MethodRef(owner: Class[_], name: String, paramTypes: Seq[Class[_]], isConstructor: Boolean)
 
 trait MethodParameter extends Parameter {
   def method: MethodRef
-}
-
-object MethodParameter {
-  def accessor[A, B](cl: Class[A])(body: A => B): Any => B = { (x: Any) =>
-    body(cl.cast(x))
-  }
 }
 
 trait MethodSurface extends ParameterBase {
