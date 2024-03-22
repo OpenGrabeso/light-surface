@@ -487,13 +487,13 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q):
 
       paramss.map(_.filterNot(hasHiddenAnnotation)).map { params =>
         params.zipWithIndex
-          .map((x, i) => (x, i + 1, x.tree))
-          .collect { case (s: Symbol, i: Int, v: ValDef) =>
+          .map((x, i) => (x, i + 1, t.memberType(x)))
+          .collect { case (s: Symbol, i: Int, v: TypeRepr) =>
             // E.g. case class Foo(a: String)(implicit b: Int)
             // println(s"=== ${v.show} ${s.flags.show} ${s.flags.is(Flags.Implicit)}")
             // Substitute type param to actual types
 
-            val resolved: TypeRepr = resolveType(v.tpt.tpe, typeArgTable)
+            val resolved: TypeRepr = resolveType(v, typeArgTable)
 
             // println(s"===    ${resolved.show}")
 
@@ -506,7 +506,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q):
                 // println(s"=== target: ${m.name}, ${m.owner.name}")
                 m.name == targetMethodName
               }
-            MethodArg(v.name, resolved, defaultValueGetter, defaultMethodArgGetter, isImplicit)
+            MethodArg(s.name, resolved, defaultValueGetter, defaultMethodArgGetter, isImplicit)
           }
       }
 
