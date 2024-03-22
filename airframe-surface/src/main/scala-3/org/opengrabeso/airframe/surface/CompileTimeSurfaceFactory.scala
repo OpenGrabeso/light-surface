@@ -347,24 +347,6 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q):
         paramType.name -> argType
       }.toMap[String, TypeRepr]
 
-    // Get a constructor with its generic types are resolved
-    private def getResolvedConstructorOf(t: TypeRepr): Option[Term] =
-      val ts = t.typeSymbol
-      ts.primaryConstructor match
-        case pc if pc == Symbol.noSymbol =>
-          None
-        case pc =>
-          // val cstr = Select.apply(New(TypeIdent(ts)), "<init>")
-          val cstr = New(Inferred(t)).select(pc)
-          if ts.typeMembers.isEmpty then Some(cstr)
-          else
-            val lookupTable = typeMappingTable(t, pc)
-            // println(s"--- ${lookupTable}")
-            val typeArgs = pc.paramSymss.headOption.getOrElse(List.empty).map(_.tree).collect { case t: TypeDef =>
-              lookupTable.getOrElse(t.name, TypeRepr.of[AnyRef])
-            }
-            Some(cstr.appliedToTypes(typeArgs))
-
     private def genericTypeFactory: Factory = {
       case t if t =:= TypeRepr.of[Any] =>
         '{ Alias("Any", "scala.Any", AnyRefSurface) }
