@@ -42,6 +42,7 @@ object MethodExamples {
   class C extends G
 
   class D {
+    /** this is hello method, it is well documented */
     def hello(v: String = "hello"): String = v
   }
 
@@ -159,5 +160,13 @@ class MethodSurfaceTest extends SurfaceSpec with should.Matchers {
     val arrayMethods = iiSurface.head
     arrayMethods._2.map(_.name) should contain ("length")
     arrayMethods._2.find(_.name == "apply").get.returnType shouldBe Surface.of[String]
+  }
+
+  test("read method doc comment") {
+    val dMethods = Surface.methodsOf[D]
+    dMethods should not be empty
+    val hello = dMethods.find(_.name == "hello").get
+    hello.docString should contain ("documented")
+
   }
 }

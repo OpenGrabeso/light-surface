@@ -662,8 +662,9 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q):
           // println(s"==== method of: def ${m.name}")
           val params       = methodParametersOf(targetType, m)
           //val args         = methodArgsOf(targetType, m)
+          val docString = Expr(m.docstring)
           '{
-            ClassMethodSurface(${ mod }, ${ owner }, ${ name }, ${ ret }, ${ params }.toIndexedSeq)
+            ClassMethodSurface(${ mod }, ${ owner }, ${ name }, ${ ret }, ${ params }.toIndexedSeq, ${ docString })
           }
         }
         val expr = Expr.ofSeq(methodSurfaces)

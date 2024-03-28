@@ -52,6 +52,7 @@ trait MethodSurface extends ParameterBase {
   def args: Seq[MethodParameter]
   def surface: Surface = returnType
   def returnType: Surface
+  def docString: Option[String]
 
   def isPublic: Boolean    = (mod & MethodModifier.PUBLIC) != 0
   def isPrivate: Boolean   = (mod & MethodModifier.PRIVATE) != 0
@@ -355,4 +356,5 @@ case class ClassMethodSurface(
     name: String,
     returnType: Surface,
     args: Seq[MethodParameter],
+    docString: Option[String],
 ) extends MethodSurface
