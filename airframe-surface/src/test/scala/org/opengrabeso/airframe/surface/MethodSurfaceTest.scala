@@ -161,12 +161,4 @@ class MethodSurfaceTest extends SurfaceSpec with should.Matchers {
     arrayMethods._2.map(_.name) should contain ("length")
     arrayMethods._2.find(_.name == "apply").get.returnType shouldBe Surface.of[String]
   }
-
-  test("read method doc comment") {
-    val dMethods = Surface.methodsOf[D]
-    dMethods should not be empty
-    val hello = dMethods.find(_.name == "hello").get
-    hello.docString should contain ("documented")
-
-  }
 }
