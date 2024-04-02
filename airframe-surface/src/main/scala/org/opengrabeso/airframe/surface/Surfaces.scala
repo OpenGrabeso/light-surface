@@ -274,7 +274,7 @@ case object AnyRefSurface extends GenericSurface(classOf[AnyRef]) {
   */
 class GenericSurface(
     override val rawType: Class[_],
-    //override val docString: Option[String] = None,
+    override val docString: Option[String] = None,
     override val typeArgs: Seq[Surface] = Seq.empty,
     override val params: Seq[Parameter] = Seq.empty
 //override val objectFactory: Option[ObjectFactory] = None
