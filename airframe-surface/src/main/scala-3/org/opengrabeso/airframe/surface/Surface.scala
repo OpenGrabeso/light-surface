@@ -39,7 +39,9 @@ trait Surface extends Serializable:
     */
   def isEnum: Boolean = classOf[scala.reflect.Enum].isAssignableFrom(rawType)
 
-  def withOuter(outer: AnyRef): Surface    = this
+  def withOuter(outer: AnyRef): Surface = this
+  def docString: Option[String]
+
 
 /**
   * Scala 3 implementation of Surface
@@ -51,4 +53,6 @@ object Surface:
 
   inline def of[A]: Surface                   = ${ CompileTimeSurfaceFactory.surfaceOf[A] }
   inline def methodsOf[A]: Seq[MethodSurface] = ${ CompileTimeSurfaceFactory.methodsOf[A] }
-  inline def inheritedMethodsOf[A]: Seq[(Surface, Seq[MethodSurface])] = ${ CompileTimeSurfaceFactory.inheritedMethodsOf[A] }
+  inline def inheritedMethodsOf[A]: Seq[(Surface, Seq[MethodSurface])] = ${
+    CompileTimeSurfaceFactory.inheritedMethodsOf[A]
+  }
