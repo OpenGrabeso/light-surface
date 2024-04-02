@@ -309,8 +309,16 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q):
     private def clsOf(t: TypeRepr): Expr[Class[_]] =
       Literal(ClassOfConstant(t)).asExpr.asInstanceOf[Expr[Class[_]]]
 
-    private def newGenericSurfaceOf(t: TypeRepr): Expr[Surface] =
-      '{ new GenericSurface(${ clsOf(t) }) }
+    private def newGenericSurfaceOf(t: TypeRepr, docstring: Option[String] = None): Expr[Surface] =
+      // println(s"newGenericSurfaceOf ${t.show}")
+      '{
+        new org.opengrabeso.airframe.surface.GenericSurface(
+          ${ clsOf(t) },
+          typeArgs = Seq.empty,
+          params = Seq.empty,
+          docString = ${ Expr(t.typeSymbol.docstring.orElse(docstring)) }
+        )
+      }
 
     private def genericTypeWithConstructorFactory: Factory = {
       case t
@@ -325,11 +333,13 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q):
       val methodParams = constructorParametersOf(t)
       // val isStatic     = !t.typeSymbol.flags.is(Flags.Local)
 
+        // println(s"genericTypeWithConstructorFactory ${t.show} ${t.typeSymbol.docstring} ${Option(t.typeSymbol.primaryConstructor).flatMap(_.docstring)}")
         '{
           new org.opengrabeso.airframe.surface.GenericSurface(
             ${ clsOf(t) },
-            ${ Expr.ofSeq(typeArgs) }.toIndexedSeq,
-            params = ${ methodParams }
+            typeArgs = ${ Expr.ofSeq(typeArgs) }.toIndexedSeq,
+            params = ${ methodParams },
+            docString = ${Expr(t.typeSymbol.docstring.orElse(Option(t.typeSymbol.primaryConstructor).flatMap(_.docstring)))}
           )
         }
     }
@@ -352,13 +362,13 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q):
         '{ Alias("Any", "scala.Any", AnyRefSurface) }
       case a: AppliedType =>
         val typeArgs = a.args.map(surfaceOf(_))
-        '{ new GenericSurface(${ clsOf(a) }, typeArgs = ${ Expr.ofSeq(typeArgs) }.toIndexedSeq) }
+        '{ new GenericSurface(${ clsOf(a) }, typeArgs = ${ Expr.ofSeq(typeArgs) }.toIndexedSeq, params = Seq.empty, docString = ${Expr(a.typeSymbol.docstring)}) }
       // special treatment for type Foo = Foo[Buz]
-      case TypeBounds(a1: AppliedType, a2: AppliedType) if a1 == a2 =>
+      case t@TypeBounds(a1: AppliedType, a2: AppliedType) if a1 == a2 =>
         val typeArgs = a1.args.map(surfaceOf(_))
-        '{ new GenericSurface(${ clsOf(a1) }, typeArgs = ${ Expr.ofSeq(typeArgs) }.toIndexedSeq) }
+        '{ new GenericSurface(${ clsOf(a1) }, typeArgs = ${ Expr.ofSeq(typeArgs) }.toIndexedSeq, docString = ${ Expr(t.typeSymbol.docstring) } ) }
       case r: Refinement =>
-        newGenericSurfaceOf(r.info)
+        newGenericSurfaceOf(r.info, r.typeSymbol.docstring)
       case t if t <:< TypeRepr.of[scala.reflect.Enum] && !(t =:= TypeRepr.of[Nothing]) =>
         /**
           * Build a code for finding Enum instance from an input string value: {{ (cl: Class[_], s: String) =>
