@@ -15,7 +15,7 @@ publish / skip := true
 publishLocal / skip := true
 
 val VERSION = "0.5.1-SNAPSHOT"
-val SCALA_3 = "3.3.3"
+val SCALA_3 = "3.5.0-RC1-bin-20240331-cc55381-NIGHTLY"
 
 // Reload build.sbt on changes
 Global / onChangedBuildSource := ReloadOnSourceChanges

@@ -22,7 +22,6 @@ trait Surface extends Serializable:
   def rawType: Class[?]
   def typeArgs: Seq[Surface]
   def params: Seq[Parameter]
-  def docString: Option[String] = None
   def name: String
   def fullName: String
 
@@ -41,6 +40,8 @@ trait Surface extends Serializable:
   def isEnum: Boolean = classOf[scala.reflect.Enum].isAssignableFrom(rawType)
 
   def withOuter(outer: AnyRef): Surface = this
+  def docString: Option[String]
+
 
 /**
   * Scala 3 implementation of Surface

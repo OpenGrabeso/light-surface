@@ -221,6 +221,7 @@ case class TaggedSurface(base: Surface, tag: Surface) extends Surface {
   override def isAlias: Boolean       = base.isAlias
   override def isPrimitive: Boolean   = base.isPrimitive
   override def dealias: Surface       = base.dealias
+  override def docString              = None
 }
 
 /**
@@ -240,6 +241,7 @@ case class IntersectionSurface(left: Surface, right: Surface) extends Surface {
   override def isAlias: Boolean       = left.isAlias
   override def isPrimitive: Boolean   = left.isPrimitive
   override def dealias: Surface       = left.dealias
+  override def docString              = None
 }
 
 /**
@@ -259,6 +261,7 @@ case class UnionSurface(left: Surface, right: Surface) extends Surface {
   override def isAlias: Boolean       = left.isAlias
   override def isPrimitive: Boolean   = left.isPrimitive
   override def dealias: Surface       = UnionSurface(left.dealias, right.dealias)
+  override def docString              = None
 }
 
 case object AnyRefSurface extends GenericSurface(classOf[AnyRef]) {
@@ -274,10 +277,9 @@ case object AnyRefSurface extends GenericSurface(classOf[AnyRef]) {
   */
 class GenericSurface(
     override val rawType: Class[_],
-    override val docString: Option[String] = None,
     override val typeArgs: Seq[Surface] = Seq.empty,
-    override val params: Seq[Parameter] = Seq.empty
-//override val objectFactory: Option[ObjectFactory] = None
+    override val params: Seq[Parameter] = Seq.empty,
+    override val docString: Option[String] = None,
 ) extends Surface {
   private def getClassName: String = {
     try {
@@ -349,7 +351,7 @@ case class LazySurface(override val rawType: Class[_], fullName: String) extends
   override def isOption               = ref.isOption
   override def isAlias                = ref.isAlias
   override def isPrimitive            = ref.isPrimitive
-  //override def docString              = ref.docString
+  override def docString              = ref.docString
 }
 
 case class ClassMethodSurface(
