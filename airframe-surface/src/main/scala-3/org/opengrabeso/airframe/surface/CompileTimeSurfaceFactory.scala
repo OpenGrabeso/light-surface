@@ -310,7 +310,8 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q):
       Literal(ClassOfConstant(t)).asExpr.asInstanceOf[Expr[Class[_]]]
 
     private def newGenericSurfaceOf(t: TypeRepr): Expr[Surface] =
-      '{ new GenericSurface(${ clsOf(t) }) }
+      val doc = Expr(None) // t.typeSymbol.docstring
+      '{ new GenericSurface(${ clsOf(t) }/*, d = 0*/ /*, docString = ${ doc }*/ ) }
 
     private def genericTypeWithConstructorFactory: Factory = {
       case t
@@ -328,8 +329,9 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q):
         '{
           new org.opengrabeso.airframe.surface.GenericSurface(
             ${ clsOf(t) },
-            ${ Expr.ofSeq(typeArgs) }.toIndexedSeq,
-            params = ${ methodParams }
+            typeArgs = ${ Expr.ofSeq(typeArgs) }.toIndexedSeq,
+            params = ${ methodParams },
+            /*docString = ${Expr(t.typeSymbol.docstring)}*/
           )
         }
     }
@@ -352,6 +354,8 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q):
         '{ Alias("Any", "scala.Any", AnyRefSurface) }
       case a: AppliedType =>
         val typeArgs = a.args.map(surfaceOf(_))
+        //val docString = Expr(a.typeSymbol.docstring)
+        //'{ new GenericSurface(${ clsOf(a) }, typeArgs = ${ Expr.ofSeq(typeArgs) }.toIndexedSeq /*, docString = ${docString}*/) }
         '{ new GenericSurface(${ clsOf(a) }, typeArgs = ${ Expr.ofSeq(typeArgs) }.toIndexedSeq) }
       // special treatment for type Foo = Foo[Buz]
       case TypeBounds(a1: AppliedType, a2: AppliedType) if a1 == a2 =>

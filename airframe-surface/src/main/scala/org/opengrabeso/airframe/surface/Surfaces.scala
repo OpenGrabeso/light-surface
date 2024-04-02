@@ -30,10 +30,10 @@ trait Parameter extends ParameterBase {
   def surface: Surface
 
   /**
-   * Get the default value of this parameter. For example the default value of x in class A(x:Int = 10) is 10
-   *
-   * @return
-   */
+    * Get the default value of this parameter. For example the default value of x in class A(x:Int = 10) is 10
+    *
+    * @return
+    */
   def getDefaultValue: Option[Any]
 }
 
@@ -70,7 +70,7 @@ case class StaticMethodParameter(
     index: Int,
     name: String,
     surface: Surface,
-    private val defaultValue: Option[Any] = None,
+    private val defaultValue: Option[Any] = None
 ) extends MethodParameter {
   override def toString: String             = s"${name}:${surface.name}"
   override def getDefaultValue: Option[Any] = defaultValue
@@ -153,7 +153,7 @@ object Primitive {
 }
 
 case class Alias(override val name: String, override val fullName: String, ref: Surface)
-    extends GenericSurface(ref.rawType, ref.typeArgs, ref.params) {
+    extends GenericSurface(ref.rawType, typeArgs = ref.typeArgs, params = ref.params) {
   override def toString: String     = s"${name}:=${ref.name}"
   override def isAlias: Boolean     = true
   override def isPrimitive: Boolean = ref.isPrimitive
@@ -166,7 +166,7 @@ case class HigherKindedTypeSurface(
     override val fullName: String,
     ref: Surface,
     override val typeArgs: Seq[Surface]
-) extends GenericSurface(ref.rawType, typeArgs, ref.params) {
+) extends GenericSurface(ref.rawType, typeArgs = typeArgs, params = ref.params) {
   override def toString: String = {
     val s = if (typeArgs.isEmpty) {
       name
@@ -187,14 +187,14 @@ case object ExistentialType extends GenericSurface(classOf[Any]) {
 }
 
 case class ArraySurface(override val rawType: Class[_], elementSurface: Surface)
-    extends GenericSurface(rawType, Seq(elementSurface)) {
+    extends GenericSurface(rawType, typeArgs = Seq(elementSurface)) {
   override def name: String     = s"Array[${elementSurface.name}]"
   override def fullName: String = s"Array[${elementSurface.fullName}]"
   override def toString: String = name
 }
 
 case class OptionSurface(override val rawType: Class[_], elementSurface: Surface)
-    extends GenericSurface(rawType, Seq(elementSurface)) {
+    extends GenericSurface(rawType, typeArgs = Seq(elementSurface)) {
   override def isOption: Boolean = true
 }
 case class JavaEnumSurface(override val rawType: Class[_]) extends GenericSurface(rawType)
@@ -208,7 +208,7 @@ case class EnumSurface(override val rawType: Class[_], stringExtractor: (Class[_
     extends GenericSurface(rawType)
 
 case class TupleSurface(override val rawType: Class[_], override val typeArgs: Seq[Surface])
-    extends GenericSurface(rawType, typeArgs) {}
+    extends GenericSurface(rawType, typeArgs = typeArgs) {}
 
 case class TaggedSurface(base: Surface, tag: Surface) extends Surface {
   override def toString: String       = name
@@ -230,16 +230,16 @@ case class TaggedSurface(base: Surface, tag: Surface) extends Surface {
   * @param right
   */
 case class IntersectionSurface(left: Surface, right: Surface) extends Surface {
-  override def toString: String                     = name
-  override def rawType: Class[_]                    = left.rawType
-  override def typeArgs: Seq[Surface]               = left.typeArgs
-  override def params: Seq[Parameter]               = left.params
-  override def name: String                         = s"${left.name}&${right.name}"
-  override def fullName: String                     = s"${left.fullName}&${right.fullName}"
-  override def isOption: Boolean                    = left.isOption
-  override def isAlias: Boolean                     = left.isAlias
-  override def isPrimitive: Boolean                 = left.isPrimitive
-  override def dealias: Surface                     = left.dealias
+  override def toString: String       = name
+  override def rawType: Class[_]      = left.rawType
+  override def typeArgs: Seq[Surface] = left.typeArgs
+  override def params: Seq[Parameter] = left.params
+  override def name: String           = s"${left.name}&${right.name}"
+  override def fullName: String       = s"${left.fullName}&${right.fullName}"
+  override def isOption: Boolean      = left.isOption
+  override def isAlias: Boolean       = left.isAlias
+  override def isPrimitive: Boolean   = left.isPrimitive
+  override def dealias: Surface       = left.dealias
 }
 
 /**
@@ -249,16 +249,16 @@ case class IntersectionSurface(left: Surface, right: Surface) extends Surface {
   * @param right
   */
 case class UnionSurface(left: Surface, right: Surface) extends Surface {
-  override def toString: String                     = name
-  override def rawType: Class[_]                    = left.rawType
-  override def typeArgs: Seq[Surface]               = left.typeArgs
-  override def params: Seq[Parameter]               = left.params
-  override def name: String                         = s"${left.name}|${right.name}"
-  override def fullName: String                     = s"${left.fullName}|${right.fullName}"
-  override def isOption: Boolean                    = left.isOption
-  override def isAlias: Boolean                     = left.isAlias
-  override def isPrimitive: Boolean                 = left.isPrimitive
-  override def dealias: Surface                     = UnionSurface(left.dealias, right.dealias)
+  override def toString: String       = name
+  override def rawType: Class[_]      = left.rawType
+  override def typeArgs: Seq[Surface] = left.typeArgs
+  override def params: Seq[Parameter] = left.params
+  override def name: String           = s"${left.name}|${right.name}"
+  override def fullName: String       = s"${left.fullName}|${right.fullName}"
+  override def isOption: Boolean      = left.isOption
+  override def isAlias: Boolean       = left.isAlias
+  override def isPrimitive: Boolean   = left.isPrimitive
+  override def dealias: Surface       = UnionSurface(left.dealias, right.dealias)
 }
 
 case object AnyRefSurface extends GenericSurface(classOf[AnyRef]) {
@@ -274,9 +274,10 @@ case object AnyRefSurface extends GenericSurface(classOf[AnyRef]) {
   */
 class GenericSurface(
     override val rawType: Class[_],
+    //override val docString: Option[String] = None,
     override val typeArgs: Seq[Surface] = Seq.empty,
-    override val params: Seq[Parameter] = Seq.empty,
-    //override val objectFactory: Option[ObjectFactory] = None
+    override val params: Seq[Parameter] = Seq.empty
+//override val objectFactory: Option[ObjectFactory] = None
 ) extends Surface {
   private def getClassName: String = {
     try {
@@ -342,12 +343,13 @@ case class LazySurface(override val rawType: Class[_], fullName: String) extends
     TypeName.sanitizeTypeName(s)
   }
 
-  override def toString: String                     = name
-  override def params                               = ref.params
-  override def typeArgs: Seq[Surface]               = ref.typeArgs
-  override def isOption                             = ref.isOption
-  override def isAlias                              = ref.isAlias
-  override def isPrimitive                          = ref.isPrimitive
+  override def toString: String       = name
+  override def params                 = ref.params
+  override def typeArgs: Seq[Surface] = ref.typeArgs
+  override def isOption               = ref.isOption
+  override def isAlias                = ref.isAlias
+  override def isPrimitive            = ref.isPrimitive
+  //override def docString              = ref.docString
 }
 
 case class ClassMethodSurface(
@@ -356,5 +358,5 @@ case class ClassMethodSurface(
     name: String,
     returnType: Surface,
     args: Seq[MethodParameter],
-    docString: Option[String],
+    docString: Option[String]
 ) extends MethodSurface
