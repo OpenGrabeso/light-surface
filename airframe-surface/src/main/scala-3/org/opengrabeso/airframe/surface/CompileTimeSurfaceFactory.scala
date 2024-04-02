@@ -314,7 +314,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q):
       '{
         new org.opengrabeso.airframe.surface.GenericSurface(
           ${ clsOf(t) },
-          typeArgs = Seq.empty,
+          //typeArgs = Seq.empty,
           params = Seq.empty,
           docString = ${ doc }
         )
