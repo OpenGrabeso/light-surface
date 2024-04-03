@@ -11,21 +11,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.opengrabeso.airframe.surface
 
 /**
+  * Note: This interface is the same with scala-2 Surface interface, but Scala compiler requires defining Surface object
+  * in the same file, so this interface is copied.
   */
-object MethodModifier {
-  val PUBLIC       = 0x00000001
-  val PRIVATE      = 0x00000002
-  val PROTECTED    = 0x00000004
-  val STATIC       = 0x00000008
-  val FINAL        = 0x00000010
-  val SYNCHRONIZED = 0x00000020
-  val VOLATILE     = 0x00000040
-  val TRANSIENT    = 0x00000080
-  val NATIVE       = 0x00000100
-  val INTERFACE    = 0x00000200
-  val ABSTRACT     = 0x00000400
-  val STRICT       = 0x00000800
-}
+trait Surface extends Serializable:
+  def rawType: Class[?]
+  def typeArgs: Seq[Surface]
+
+  def docString: Option[String]
+
+/**
+  * Scala 3 implementation of Surface
+  */
+object Surface:
+  import scala.quoted.*
+
+  inline def of[A]: Surface             = ${ CompileTimeSurfaceFactory.surfaceOf[A] }
+  inline def methodsOf[A]: Seq[Surface] = ${ CompileTimeSurfaceFactory.methodsOf[A] }

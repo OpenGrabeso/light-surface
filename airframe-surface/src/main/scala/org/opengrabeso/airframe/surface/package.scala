@@ -14,17 +14,14 @@
 package org.opengrabeso.airframe
 
 import java.util.concurrent.ConcurrentHashMap
-
-import scala.jdk.CollectionConverters.*
 import scala.collection.mutable
+import scala.jdk.CollectionConverters.*
 
-/**
-  */
-package object surface {
-  val surfaceCache       = new ConcurrentHashMap[String, Surface]().asScala
+package object surface:
+  val surfaceCache = new ConcurrentHashMap[String, Surface]().asScala
 
   def getCached(fullName: String): Surface =
-    surfaceCache.getOrElse(fullName, throw new IllegalArgumentException(s"Surface ${fullName} is not found in cache"))
+    println(s"getCached $fullName")
+    surfaceCache(fullName)
 
-  def newCacheMap[A, B]: mutable.Map[A, B] = new mutable.HashMap[A, B]()
-}
+  def newCacheMap[A, B]: scala.collection.mutable.Map[A, B] = new mutable.WeakHashMap[A, B]()
