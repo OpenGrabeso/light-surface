@@ -23,19 +23,11 @@ object Surface:
 
   import scala.quoted.*
 
-  inline def of[A]: Surface             = ${ CompileTimeSurfaceFactory.surfaceOf[A] }
   inline def methodsOf[A]: Seq[Surface] = ${ CompileTimeSurfaceFactory.methodsOf[A] }
 
 class Surface(val docString: Option[String] = None)
 
 private[surface] object CompileTimeSurfaceFactory:
-
-  def surfaceOf[A](using tpe: Type[A], quotes: Quotes): Expr[Surface] =
-    import quotes.*
-    import quotes.reflect.*
-
-    val f = new CompileTimeSurfaceFactory(using quotes)
-    f.surfaceOf(tpe)
 
   def methodsOf[A](using tpe: Type[A], quotes: Quotes): Expr[Seq[Surface]] =
     val f = new CompileTimeSurfaceFactory(using quotes)
@@ -65,8 +57,8 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q):
       seen += t -> observedSurfaceCount.getAndIncrement()
       // For debugging
       val surface = '{
-        val docString = None
-        new org.opengrabeso.airframe.surface.Surface(docString) // error
+        val none = None
+        new org.opengrabeso.airframe.surface.Surface(none) // error
         // new org.opengrabeso.airframe.surface.Surface(None) // no error
       }
       // println(s"[${t.show}] ${surface.show}")
