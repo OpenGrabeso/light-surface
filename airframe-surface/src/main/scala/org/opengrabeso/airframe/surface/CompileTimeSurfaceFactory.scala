@@ -15,7 +15,28 @@ package org.opengrabeso.airframe.surface
 import java.util.concurrent.atomic.AtomicInteger
 import scala.collection.immutable.ListMap
 import scala.quoted.*
-import scala.reflect.ClassTag
+
+trait Surface extends Serializable:
+  def rawType: Class[?]
+  def typeArgs: Seq[Surface]
+
+  def docString: Option[String]
+
+/**
+  * Scala 3 implementation of Surface
+  */
+object Surface:
+
+  import scala.quoted.*
+
+  inline def of[A]: Surface             = ${ CompileTimeSurfaceFactory.surfaceOf[A] }
+  inline def methodsOf[A]: Seq[Surface] = ${ CompileTimeSurfaceFactory.methodsOf[A] }
+
+class GenericSurface(
+    override val rawType: Class[_],
+    override val typeArgs: Seq[Surface] = Seq.empty,
+    override val docString: Option[String] = None
+) extends Surface
 
 private[surface] object CompileTimeSurfaceFactory:
 
@@ -55,7 +76,6 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q):
     else
       seen += t -> observedSurfaceCount.getAndIncrement()
       // For debugging
-      // println(s"[${typeNameOf(t)}]\n  ${t}\nfull type name: ${fullTypeNameOf(t)}\nclass: ${t.getClass}")
       val surface = '{
         new org.opengrabeso.airframe.surface.GenericSurface(
           ${ clsOf(t) },
@@ -63,6 +83,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q):
           docString = None
         )
       }
+      // println(s"[${t.show}] ${surface.show}")
 
       memo += (t -> surface)
       surface
