@@ -5,7 +5,8 @@ ThisBuild / githubRepository := "light-surface"
 Global / excludeLintKeys += ThisBuild / githubTokenSource // prevent warning in SBT
 
 def tokenSettings = Seq[Setting[_]](
-  githubTokenSource := TokenSource.GitConfig("github.token") || TokenSource.Environment("BUILD_TOKEN") || TokenSource.Environment("GITHUB_TOKEN")
+  githubTokenSource := TokenSource.GitConfig("github.token") || TokenSource.Environment("BUILD_TOKEN") || TokenSource
+    .Environment("GITHUB_TOKEN")
 )
 
 Global / excludeLintKeys += ThisBuild / githubTokenSource
@@ -15,7 +16,7 @@ publish / skip := true
 publishLocal / skip := true
 
 val VERSION = "0.5.1-SNAPSHOT"
-val SCALA_3 = "3.5.0-RC1-bin-20240331-cc55381-NIGHTLY"
+val SCALA_3 = "3.4.1"
 
 // Reload build.sbt on changes
 Global / onChangedBuildSource := ReloadOnSourceChanges
@@ -29,12 +30,14 @@ ThisBuild / organization := "org.opengrabeso"
 
 val buildSettings = tokenSettings ++ Seq[Setting[_]](
   version := VERSION,
-  scmInfo := Some(ScmInfo(url("https://github.com/OpenGrabeso/light-surface"), "scm:git:github.com/OpenGrabeso/light-surface")),
+  scmInfo := Some(
+    ScmInfo(url("https://github.com/OpenGrabeso/light-surface"), "scm:git:github.com/OpenGrabeso/light-surface")
+  ),
   licenses += ("Apache-2.0", url("https://www.apache.org/licenses/LICENSE-2.0.html")),
   // Exclude compile-time only projects. This is a workaround for bloop,
   // which cannot resolve Optional dependencies nor compile-internal dependencies.
-  crossPaths            := true,
-  publishMavenStyle     := true,
+  crossPaths        := true,
+  publishMavenStyle := true,
   scalacOptions ++= Seq(
     "-feature",
     "-deprecation",
@@ -44,8 +47,8 @@ val buildSettings = tokenSettings ++ Seq[Setting[_]](
     "-Wconf:msg=`_` is deprecated for wildcard arguments of types:s",
     "-Wconf:msg=with as a type operator has been deprecated:s",
     "-Wconf:msg=The syntax .* is no longer supported for vararg splices:s",
-    "-Wconf:msg=Alphanumeric method .* is not declared infix:s",
-  ),
+    "-Wconf:msg=Alphanumeric method .* is not declared infix:s"
+  )
 )
 
 // Do not run tests concurrently to avoid JMX registration failures
@@ -57,7 +60,7 @@ val jsBuildSettings = Seq[Setting[_]](
     ("org.scala-js" %%% "scalajs-java-securerandom" % "1.0.0" % Test).cross(CrossVersion.for3Use2_13),
     // TODO It should be included in AirSpec
     "org.scala-js" %%% "scala-js-macrotask-executor" % "1.1.1" % Test
-  ),
+  )
 )
 
 lazy val surface =
@@ -66,15 +69,15 @@ lazy val surface =
     .in(file("airframe-surface"))
     .settings(buildSettings)
     .settings(
-      name        := "light-surface",
-      Compile / packageDoc / publishArtifact := false,
-      description := "A library for extracting object structure surface",
-      libraryDependencies += "org.scalatest" %%% "scalatest" % "3.2.18" % Test,
+      name                                    := "light-surface",
+      Compile / packageDoc / publishArtifact  := false,
+      description                             := "A library for extracting object structure surface",
+      libraryDependencies += "org.scalatest" %%% "scalatest" % "3.2.18" % Test
     )
     .jsSettings(jsBuildSettings)
 
-lazy val root = project.in(file(".")).aggregate(surface.jvm, surface.js).settings(
-  name := "light-surface",
-  tokenSettings,
-)
-
+lazy val root = project
+  .in(file(".")).aggregate(surface.jvm, surface.js).settings(
+    name := "light-surface",
+    tokenSettings
+  )
