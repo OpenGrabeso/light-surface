@@ -17,7 +17,6 @@ import scala.collection.immutable.ListMap
 import scala.quoted.*
 
 trait Surface extends Serializable:
-  def rawType: Class[?]
   def typeArgs: Seq[Surface]
 
   def docString: Option[String]
@@ -33,7 +32,6 @@ object Surface:
   inline def methodsOf[A]: Seq[Surface] = ${ CompileTimeSurfaceFactory.methodsOf[A] }
 
 class GenericSurface(
-    override val rawType: Class[_],
     override val typeArgs: Seq[Surface] = Seq.empty,
     override val docString: Option[String] = None
 ) extends Surface
@@ -77,19 +75,14 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q):
       seen += t -> observedSurfaceCount.getAndIncrement()
       // For debugging
       val surface = '{
-        new org.opengrabeso.airframe.surface.GenericSurface(
-          ${ clsOf(t) },
-          // typeArgs = Seq.empty,
-          docString = None
-        )
+        val docString = None
+        new org.opengrabeso.airframe.surface.GenericSurface(Seq.empty, docString) // error
+        // new org.opengrabeso.airframe.surface.GenericSurface(Seq.empty, None) // no error
       }
       // println(s"[${t.show}] ${surface.show}")
 
       memo += (t -> surface)
       surface
-
-  private def clsOf(t: TypeRepr): Expr[Class[_]] =
-    Literal(ClassOfConstant(t)).asExpr.asInstanceOf[Expr[Class[_]]]
 
   private def methodsOf(t: TypeRepr, uniqueId: String, inherited: Boolean): Expr[Seq[Surface]] =
     // Run just for collecting known surfaces. seen variable will be updated
