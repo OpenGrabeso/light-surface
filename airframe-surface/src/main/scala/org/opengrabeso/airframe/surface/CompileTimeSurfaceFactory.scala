@@ -16,11 +16,6 @@ import java.util.concurrent.atomic.AtomicInteger
 import scala.collection.immutable.ListMap
 import scala.quoted.*
 
-trait Surface extends Serializable:
-  def typeArgs: Seq[Surface]
-
-  def docString: Option[String]
-
 /**
   * Scala 3 implementation of Surface
   */
@@ -31,10 +26,7 @@ object Surface:
   inline def of[A]: Surface             = ${ CompileTimeSurfaceFactory.surfaceOf[A] }
   inline def methodsOf[A]: Seq[Surface] = ${ CompileTimeSurfaceFactory.methodsOf[A] }
 
-class GenericSurface(
-    override val typeArgs: Seq[Surface] = Seq.empty,
-    override val docString: Option[String] = None
-) extends Surface
+class Surface(val docString: Option[String] = None)
 
 private[surface] object CompileTimeSurfaceFactory:
 
@@ -63,25 +55,22 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q):
 
   private var observedSurfaceCount = new AtomicInteger(0)
   private var seen                 = ListMap[TypeRepr, Int]()
-  private val memo                 = scala.collection.mutable.Map[TypeRepr, Expr[Surface]]()
 
   // To reduce the byte code size, we need to memoize the generated surface bound to a variable
   private var surfaceToVar = ListMap.empty[TypeRepr, Symbol]
 
   private def surfaceOf(t: TypeRepr, useVarRef: Boolean = true): Expr[Surface] =
     if useVarRef && surfaceToVar.contains(t) then Ref(surfaceToVar(t)).asExprOf[Surface]
-    else if seen.contains(t) then memo(t)
     else
       seen += t -> observedSurfaceCount.getAndIncrement()
       // For debugging
       val surface = '{
         val docString = None
-        new org.opengrabeso.airframe.surface.GenericSurface(Seq.empty, docString) // error
-        // new org.opengrabeso.airframe.surface.GenericSurface(Seq.empty, None) // no error
+        new org.opengrabeso.airframe.surface.Surface(docString) // error
+        // new org.opengrabeso.airframe.surface.Surface(None) // no error
       }
       // println(s"[${t.show}] ${surface.show}")
 
-      memo += (t -> surface)
       surface
 
   private def methodsOf(t: TypeRepr, uniqueId: String, inherited: Boolean): Expr[Seq[Surface]] =
@@ -116,7 +105,6 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q):
     // print(surfaceToVar.map(v => s"  ${v._1.show} => ${v._2}").mkString(s"methodsOf ${t.show}:\n", "\n", "\n"))
 
     // Clear surface cache
-    memo.clear()
     seen = ListMap.empty
 
     val surfaceDefs: List[ValDef] = surfaceToVar.toSeq.map { case (tpe, sym) =>
