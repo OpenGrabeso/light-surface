@@ -40,7 +40,7 @@ val buildSettings = tokenSettings ++ Seq[Setting[_]](
     "-deprecation",
     "-release:8",
     // Use this flag for debugging Macros
-    // "-Xcheck-macros",
+    "-Xcheck-macros",
     "-Wconf:msg=`_` is deprecated for wildcard arguments of types:s",
     "-Wconf:msg=with as a type operator has been deprecated:s",
     "-Wconf:msg=The syntax .* is no longer supported for vararg splices:s",

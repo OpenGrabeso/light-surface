@@ -237,6 +237,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q):
         val len    = h.paramNames.size
         val params = (0 until len).map { i => h.param(i) }
         val args   = params.map(surfaceOf(_))
+        println(s"HigherKindedTypeSurface A $name $params ${args.map(_.show)}")
         '{ HigherKindedTypeSurface(${ Expr(name) }, ${ Expr(fullName) }, ${ inner }, ${ Expr.ofSeq(args) }) }
       case a @ AppliedType if a.typeSymbol.name.contains("$") =>
         '{ org.opengrabeso.airframe.surface.ExistentialType }
@@ -245,10 +246,12 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q):
         val fullName = fullTypeNameOf(a)
         val args     = a.args.map(surfaceOf(_))
         // TODO support type erasure instead of using AnyRefSurface
+        println(s"HigherKindedTypeSurface B $name")
         '{ HigherKindedTypeSurface(${ Expr(name) }, ${ Expr(fullName) }, AnyRefSurface, ${ Expr.ofSeq(args) }) }
       case p @ ParamRef(TypeLambda(typeNames, _, _), _) =>
         val name     = typeNames.mkString(",")
         val fullName = fullTypeNameOf(p)
+        println(s"HigherKindedTypeSurface C $name $fullName $typeNames")
         '{ HigherKindedTypeSurface(${ Expr(name) }, ${ Expr(fullName) }, AnyRefSurface, Seq.empty) }
     }
 
@@ -307,6 +310,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q):
     }
 
     private def clsOf(t: TypeRepr): Expr[Class[_]] =
+      //Literal(ClassOfConstant(t)).changeOwner(Symbol.spliceOwner).asExpr.asInstanceOf[Expr[Class[_]]]
       Literal(ClassOfConstant(t)).asExpr.asInstanceOf[Expr[Class[_]]]
 
     private def newGenericSurfaceOf(t: TypeRepr, docstring: Option[String] = None): Expr[Surface] =

@@ -21,7 +21,7 @@ object RecursiveHigherKindTypeTest {
   class MyTask[A]
 
   object Holder {
-    type BySkinny[A] = MyTask[A]
+    type BySkinny[SkinnyA] = MyTask[SkinnyA]
     def bySkinny: Holder[BySkinny] = new InterpretedHolder
   }
 
