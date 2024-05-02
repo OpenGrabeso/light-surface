@@ -13,8 +13,14 @@
  */
 package org.opengrabeso.airframe.surface
 
+import org.opengrabeso.airframe.surface.Scala3NewTypeTest.RawType
 import org.scalatest.funsuite.AnyFunSuite
 import org.scalatest.matchers.should
+
+object Scala3NewTypeTest {
+  class RawTypeImpl(x: Double, y: Double)
+  type RawType = RawTypeImpl
+}
 
 class Scala3NewTypeTest extends AnyFunSuite with should.Matchers:
   trait Label1
@@ -71,4 +77,11 @@ class Scala3NewTypeTest extends AnyFunSuite with should.Matchers:
     val m = Surface.methodsOf[A].find(_.name == "hello")
     m shouldBe defined
     m.get.args(0).surface.name shouldBe "MyEnv"
+  }
+
+  object O:
+    opaque type NestedOpaque = Double
+
+  test("Opaque types in a nested object") {
+    val s = Surface.of[O.NestedOpaque]
   }
