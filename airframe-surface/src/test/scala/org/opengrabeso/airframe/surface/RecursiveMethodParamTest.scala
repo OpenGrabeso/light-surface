@@ -24,7 +24,7 @@ object RecursiveMethodParamTest {
 }
 
 class RecursiveMethodParamTest extends AnyFunSuite {
-  import RecursiveMethodParamTest._
+  import RecursiveMethodParamTest.*
 
   // ....
   test("Compile method surfaces with recursive method param") {

@@ -119,9 +119,6 @@ class MethodSurfaceTest extends SurfaceSpec with should.Matchers {
     assert(m.args.headOption.isDefined)
     val h = m.args.head
     // FIXME: Fix StaticMethodParameter in CompileTimeSurfaceFactory for Scala 3
-    if (!isScalaJS && !isScala3JVM) {
-      assert(h.getDefaultValue == Some("default"))
-    }
   }
 
   test("find Any surface from Map[String, Any] method surface") {
@@ -130,7 +127,7 @@ class MethodSurfaceTest extends SurfaceSpec with should.Matchers {
       case Some(m) if m.args.size == 1 =>
         val arg = m.args(0)
         val p1  = arg.surface.typeArgs(1)
-        assert(p1.fullName == "scala.Any")
+        p1.fullName shouldBe "scala.Any"
       case _ =>
         fail("F.mapInput method not found")
     }

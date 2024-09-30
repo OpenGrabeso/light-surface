@@ -293,6 +293,7 @@ class GenericSurface(
   }
 
   override def name: String = {
+    val localError = Seq.empty[Option[String]]
     val clsName = TypeName.sanitizeTypeName(getClassName)
     val s = if (typeArgs.isEmpty) {
       clsName

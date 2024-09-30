@@ -80,8 +80,8 @@ class Scala3NewTypeTest extends AnyFunSuite with should.Matchers:
   }
 
   object O:
-    opaque type NestedOpaque = Double
+    opaque type InnerOpaque = Double
 
-  test("Opaque types in a nested object") {
-    val s = Surface.of[O.NestedOpaque]
+  test("Opaque types from inner object") {
+    val s = Surface.of[O.InnerOpaque]
   }

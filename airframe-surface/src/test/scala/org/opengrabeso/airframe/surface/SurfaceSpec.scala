@@ -15,15 +15,16 @@
 package org.opengrabeso.airframe.surface
 
 import org.scalatest.funsuite.AnyFunSuite
+import org.scalatest.matchers.should
 
 import scala.language.implicitConversions
 
-trait SurfaceSpec extends AnyFunSuite with AirSpecBridge {
+trait SurfaceSpec extends AnyFunSuite with should.Matchers {
   def debug(s: => Any): Unit = {}
   protected def check(body: => Surface, expectedName: String): Surface = {
     val surface = body
     //debug(s"[${surface.getClass.getSimpleName}] $surface, ${surface.fullName}")
-    assert(surface.toString == expectedName)
+    surface.toString shouldBe expectedName
     surface
   }
 

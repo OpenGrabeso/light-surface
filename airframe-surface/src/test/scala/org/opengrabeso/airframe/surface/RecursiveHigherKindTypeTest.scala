@@ -38,13 +38,13 @@ class RecursiveHigherKindTypeTest extends SurfaceSpec {
 
   test("support recursive higher kind types") {
     val s = Surface.of[Holder[BySkinny]]
-    assert(s.name == "Holder[BySkinny]")
-    assert(s.isAlias == false)
-    assert(s.isPrimitive == false)
-    assert(s.isOption == false)
-    assert(s.dealias.toString == "Holder[BySkinny]")
+    s.name shouldBe "Holder[BySkinny]"
+    s.isAlias shouldBe false
+    s.isPrimitive shouldBe false
+    s.isOption shouldBe false
+    s.dealias.toString shouldBe "Holder[BySkinny]"
 
-    assert(s.typeArgs(0).name == "BySkinny")
-    assert(s.typeArgs(0).dealias.name == "MyTask[A]")
+    s.typeArgs(0).name shouldBe "BySkinny"
+    s.typeArgs(0).dealias.name shouldBe "MyTask[A]"
   }
 }

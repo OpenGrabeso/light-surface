@@ -15,10 +15,11 @@ package org.opengrabeso.airframe.surface
 package reflect
 
 import org.scalatest.funsuite.AnyFunSuite
+import org.scalatest.matchers.should
 
 /**
   */
-class NamedParameterTest extends AnyFunSuite {
+class NamedParameterTest extends AnyFunSuite with should.Matchers {
 
   trait MyService[F[_]] {
     def hello: F[String]
@@ -28,13 +29,13 @@ class NamedParameterTest extends AnyFunSuite {
 
   test("read F[_]") {
     val s = Surface.of[MyService[A]]
-    assert(s.toString == "MyService[A]")
+    s.toString shouldBe "MyService[A]"
 
     val m = Surface.methodsOf[MyService[A]]
     assert(m.headOption.isDefined)
 
     val m1 = m.head
     // info(m1.returnType.getClass())
-    assert(m1.returnType.toString ==  "F[String]")
+    m1.returnType.toString shouldBe "F[String]"
   }
 }

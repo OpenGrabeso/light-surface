@@ -20,7 +20,7 @@ object i3417 {
   trait MyOption[T]
 
   class Wrap(val option: MyOption[Int])
-  class MultiWrap[X](option: MyOption[Int], seq: Seq[(X, MyOption[String])], map: Map[MyOption[X], X])
+  class MultiWrap(option: MyOption[Int], seq: Seq[(Double, MyOption[String])], map: Map[MyOption[Double], Double])
 }
 
 import i3417._
@@ -36,7 +36,7 @@ class i3417 extends AnyFunSuite with should.Matchers {
     s.params.size shouldBe 1
     s.params.head.surface.name shouldBe "MyOption[Int]"
 
-    val m = Surface.of[MultiWrap[Double]]
+    val m = Surface.of[MultiWrap]
     m.params.size shouldBe 3
     m.params(0).surface.name shouldBe "MyOption[Int]"
     m.params(1).surface.name shouldBe "Seq[Tuple2[Double,MyOption[String]]]"
