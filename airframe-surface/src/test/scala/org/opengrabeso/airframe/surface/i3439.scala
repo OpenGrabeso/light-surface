@@ -31,6 +31,6 @@ class i3439 extends AnyFunSuite with should.Matchers {
   test("Handle inherited inner class") {
     //val mm = Surface.methodsOf[OuterType.type]
     val m = Surface.methodsOf[OuterType.InnerType]
-    //m.map(_.name) shouldContain "compare"
+    m.map(_.name) should contain ("compare")
   }
 }

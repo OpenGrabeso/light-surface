@@ -568,14 +568,22 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q):
         // https://github.com/lampepfl/dotty-macro-examples/blob/aed51833db652f67741089721765ad5a349f7383/defaultParamsInference/src/macro.scala
         val defaultValue: Expr[Option[Any]] = field.defaultValueGetter match
           case Some(m) =>
-            val companion = Ref(t.typeSymbol.companionModule)
-            // Populate method type parameters with Any type
-            val dummyTypeList: List[TypeRepr] = m.paramSymss.flatten.map { tp => TypeRepr.of[Any] }.toList
-            val dv: Term                      = companion.select(m).appliedToTypes(dummyTypeList)
-            '{ Some(${ dv.asExprOf[Any] }) }
+            // Check if this is a case class in a trait, which can cause companion reference issues
+            val isInTrait = t.typeSymbol.owner.flags.is(Flags.Trait)
+            if isInTrait then
+              // Skip default values for case classes defined in traits to avoid erasure issues
+              '{ None }
+            else
+              val companion = Ref(t.typeSymbol.companionModule)
+              // Populate method type parameters with Any type
+              val dummyTypeList: List[TypeRepr] = m.paramSymss.flatten.map { tp => TypeRepr.of[Any] }.toList
+              val dv: Term                      = companion.select(m).appliedToTypes(dummyTypeList)
+              '{ Some(${ dv.asExprOf[Any] }) }
+
           case _ => '{ None }
 
         // Generate a field accessor { (x:Any) => x.asInstanceOf[A].(field name) }
+        /*
         val paramIsAccessible =
           t.typeSymbol.fieldMember(paramName) match
             case nt if nt == Symbol.noSymbol      => false
@@ -585,6 +593,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q):
             case m if m.privateWithin.nonEmpty    => false
             case _                                => true
         // println(s"${paramName} ${paramIsAccessible}")
+        */
 
         // Using StaticMethodParameter when supportin Scala.js in Scala 3.
         // TODO: Deprecate RuntimeMethodParameter
