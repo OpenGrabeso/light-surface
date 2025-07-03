@@ -224,6 +224,11 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q):
             //println(s"Match 2 $symbolInOwner as ${t.simplified.show}")
             surfaceOf(t.simplified)
 
+    private def extractTypeArgs(t: TypeRepr): Expr[Seq[Surface]] = {
+      //println(s"extractTypeArgs of ${t.show}: ${typeArgsOf(t).map(_.show).mkString("[", ",", "]")}")
+      Expr.ofSeq(typeArgsOf(t).map(s => extractSymbol(s)))
+    }
+
     private def aliasFactory: Factory = {
       case t if t.typeSymbol.typeRef.isOpaqueAlias =>
         // Treat opaque types in Scala 3 as alias types
@@ -231,14 +236,16 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q):
         val inner    = extractSymbol(t)
         val name     = Expr(alias.name)
         val fullName = Expr(fullTypeNameOf(t))
-        '{ Alias(${ name }, ${ fullName }, ${ inner }) }
+        val typeArgs = extractTypeArgs(t)
+        '{ Alias(${ name }, ${ fullName }, ${ inner }, ${ typeArgs }) }
       case t if t.typeSymbol.isType && t.typeSymbol.isAliasType && !belongsToScalaDefault(t) =>
         // println(s"=== alias factory: ${t}, ${dealiased}, ${t.simplified}")
         val inner = extractSymbol(t)
         val s        = t.typeSymbol
         val name     = Expr(s.name)
         val fullName = Expr(fullTypeNameOf(t.asType))
-        '{ Alias(${ name }, ${ fullName }, ${ inner }) }
+        val typeArgs = extractTypeArgs(t)
+        '{ Alias(${ name }, ${ fullName }, ${ inner }, ${ typeArgs }) }
     }
 
     private def higherKindedTypeFactory: Factory = {
@@ -372,7 +379,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q):
 
     private def genericTypeFactory: Factory = {
       case t if t =:= TypeRepr.of[Any] =>
-        '{ Alias("Any", "scala.Any", AnyRefSurface) }
+        '{ Alias("Any", "scala.Any", AnyRefSurface, Seq.empty) }
       case a: AppliedType =>
         val typeArgs = a.args.map(surfaceOf(_))
         '{ new GenericSurface(${ clsOf(a) }, typeArgs = ${ Expr.ofSeq(typeArgs) }.toIndexedSeq, params = Seq.empty, docString = ${Expr(a.typeSymbol.docstring)}) }

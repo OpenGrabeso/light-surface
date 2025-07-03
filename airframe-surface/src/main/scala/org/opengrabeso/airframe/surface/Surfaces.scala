@@ -152,8 +152,9 @@ object Primitive {
   case object BigInteger extends PrimitiveSurface(classOf[java.math.BigInteger])
 }
 
-case class Alias(override val name: String, override val fullName: String, ref: Surface)
-    extends GenericSurface(ref.rawType, typeArgs = ref.typeArgs, params = ref.params, docString = ref.docString) {
+case class Alias(
+  override val name: String, override val fullName: String, ref: Surface, aliasTypeArgs: Seq[Surface] 
+) extends GenericSurface(ref.rawType, typeArgs = ref.typeArgs, params = ref.params, docString = ref.docString) {
   override def toString: String     = s"${name}:=${ref.name}"
   override def isAlias: Boolean     = true
   override def isPrimitive: Boolean = ref.isPrimitive

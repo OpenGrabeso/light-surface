@@ -14,8 +14,8 @@ publish / skip := true
 
 publishLocal / skip := true
 
-val VERSION = "0.5.6"
-val SCALA_3 = "3.3.4"
+val VERSION = "0.6.0-SNAPSHOT"
+val SCALA_3 = "3.3.6"
 
 // Reload build.sbt on changes
 Global / onChangedBuildSource := ReloadOnSourceChanges
@@ -69,7 +69,7 @@ lazy val surface =
       name        := "light-surface",
       Compile / packageDoc / publishArtifact := false,
       description := "A library for extracting object structure surface",
-      libraryDependencies += "org.scalatest" %%% "scalatest" % "3.2.18" % Test,
+      libraryDependencies += "org.scalatest" %%% "scalatest" % "3.2.19" % Test,
     )
     .jsSettings(jsBuildSettings)
 

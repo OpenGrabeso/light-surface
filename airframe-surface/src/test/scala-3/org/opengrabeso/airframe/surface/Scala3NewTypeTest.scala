@@ -62,6 +62,20 @@ class Scala3NewTypeTest extends AnyFunSuite with should.Matchers:
     s.name shouldBe "Function1[MyEnv,String]"
   }
 
+  opaque type TypedString[T] = String
+
+  test("opaque types with type parameters") {
+    val s = Surface.of[TypedString[Int]]
+    s.name shouldBe "TypedString"
+    s.fullName shouldBe "org.opengrabeso.airframe.surface.Scala3NewTypeTest.TypedString[Int]"
+    s should not be Surface.of[String]
+    s match {
+      case a: Alias =>
+        a.aliasTypeArgs.head.name shouldBe "Int"
+    }
+    s.dealias shouldBe Surface.of[String]
+  }
+
   case class MyString(env: MyEnv)
 
   test("opaque type in constructor args") {
